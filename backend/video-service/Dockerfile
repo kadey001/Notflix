@@ -18,7 +18,7 @@ RUN yarn build \
 # PROD
 FROM node:14.7.0-alpine as production-step
 WORKDIR /usr/app
-COPY --from=build-step /usr/app/src/dist ./src/dist
+COPY --from=build-step /usr/app/dist ./dist
 COPY --from=build-step /usr/app/.env ./
 COPY --from=build-step /usr/app/node_modules ./node_modules
 EXPOSE 3000
