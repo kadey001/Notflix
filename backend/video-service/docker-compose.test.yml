@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+    video-service:
+        build:
+            context: .
+            target: base-step
+        volumes:
+            - ./src:/usr/app/src
+        ports:
+            - '3000:3000'
+        command: yarn test
+        volumes:
+            - ./src:/usr/app/src
+            - ./package.json:/usr/app/package.json
+            - ./yarn.lock:/usr/app/yarn.lock
+            - ./.babelrc:/usr/app/.babelrc
+            - ./.env:/usr/app/.env
+        depends_on:
+            - postgresql
+    postgresql:
+        image: postgres:12.3
+

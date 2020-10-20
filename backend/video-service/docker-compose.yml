@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+    video-service:
+        container_name: video-service
+        build:
+            context: .
+            target: base-step
+        volumes:
+            - ./src:/usr/app/src
+        ports:
+            - '3000:3000'
+        command: yarn start
+        volumes:
+            - ./src:/usr/app/src
+            - ./package.json:/usr/app/package.json
+            - ./yarn.lock:/usr/app/yarn.lock
+            - ./.babelrc:/usr/app/.babelrc
+            - ./.env:/usr/app/.env
+        depends_on:
+            - db
+    db:
+        container_name: postgres
+        image: postgres:12.3
+        restart: always
+        environment: 
+            - POSTGRES_USER=${PGUSER}
+            - POSTGRES_PASSWORD=${PGPASSWORD}
+            - POSTGRES_DB=${PGDATABASE}
+        ports:
+            - '5432:5432'
+        volumes:
+            - postgres-data:/var/lib/postgresql/data
+volumes:
+    postgres-data:
+        driver: local
