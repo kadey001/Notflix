@@ -1,5 +1,7 @@
 import { Pool, Client } from 'pg';
 
+import env from 'config/env';
+
 export const pool = new Pool({
     max: 20,
     connectionTimeoutMillis: 1000, // 1 second

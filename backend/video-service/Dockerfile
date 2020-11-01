@@ -21,5 +21,6 @@ WORKDIR /usr/app
 COPY --from=build-step /usr/app/dist ./dist
 COPY --from=build-step /usr/app/.env ./
 COPY --from=build-step /usr/app/node_modules ./node_modules
+COPY --from=build-step /usr/app/src/lib/video/rat.mp4 ./src/lib/video/rat.mp4
 EXPOSE 3000
 CMD ["node", "./dist/index.js"]

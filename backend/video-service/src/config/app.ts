@@ -11,7 +11,7 @@ export default function (app: Express): void {
     // TODO: make this dev or prod mode
     app.use(logger('dev'));
     app.use(express.json());
-    app.use(express.urlencoded({ extended: false })); // TODO: read more about this
+    app.use(express.urlencoded({ extended: false }));
     app.use(cookieParser());
     app.use('/', router);
     app.use('/video', videoRouter);
