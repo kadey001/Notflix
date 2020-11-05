@@ -5,8 +5,6 @@ services:
         build:
             context: .
             target: base-step
-        volumes:
-            - ./src:/usr/app/src
         ports:
             - '3000:3000'
         command: yarn start
@@ -26,7 +24,10 @@ services:
             - POSTGRES_USER=${PGUSER}
             - POSTGRES_PASSWORD=${PGPASSWORD}
             - POSTGRES_DB=${PGDATABASE}
+            - PGPORT=${PGPORT}
         ports:
             - '5432:5432'
+        #command: ./DBCREATE/createDB.sh      #command to run script
         volumes:
+            - ./DBCREATE:/DBCREATE
             - ./pgdata:/var/lib/postgresql/data
