@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { addFilm } from '../db/postgresql';
+import { addFilm, filterGenre, filterviews, filterLikes, filterKeyword } from '../db/postgresql';
 
 const router = express.Router();
 
@@ -38,7 +38,7 @@ router.post('/newfilm', async (req, res, next) => {
         const { horrorGenre } = req.body as { horrorGenre: boolean };
         const { comedyGenre } = req.body as { comedyGenre: boolean };
         const { actionGenre } = req.body as { actionGenre: boolean };
-        //await addFilm(filmLength,filmTitle,actionGenre,horrorGenre,comedyGenre);
+        await addFilm(filmLength,filmTitle,comedyGenre,horrorGenre,actionGenre);
         console.log(filmTitle+", "+filmLength+", "+horrorGenre+", "+comedyGenre+", "+actionGenre);
         res.status(200).send();
     } catch (err) {
@@ -49,11 +49,14 @@ router.post('/newfilm', async (req, res, next) => {
 
 router.get('/filterGenre', async (req, res, next) => {
     try {
-        let horrorGenre = req.query.horrorGenre;
-        let comedyGenre = req.query.comedyGenre;
-        let actionGenre = req.query.actionGenre;
-        //await filterGenre(actionGenre,horrorGenre,comedyGenre);
-        console.log(horrorGenre+", "+comedyGenre+", "+actionGenre);
+        let horrorQuery = req.query.horrorGenre;
+        let comedyQuery = req.query.comedyGenre;
+        let actionQuery = req.query.actionGenre;
+        let horrorBool: boolean = (horrorQuery === 'true');
+        let comedyBool: boolean = (comedyQuery === 'true');
+        let actionBool: boolean = (actionQuery === 'true');
+        await filterGenre(comedyBool,horrorBool,actionBool);
+        console.log(comedyBool+", "+horrorBool+", "+actionBool);
         res.status(200).send();
     } catch (err) {
         console.error(err);
@@ -68,10 +71,12 @@ router.get('/filterGenre', async (req, res, next) => {
 
 router.get('/filterViews', async (req, res, next) => {
     try {
-        let desiredViews = req.query.desiredViews
-        let higherOrLower = req.query.higherOrLower
-        //await filterGenre(actionGenre,horrorGenre,comedyGenre);
-        console.log(desiredViews+", "+higherOrLower);
+        let desiredViewsQuery = req.query.desiredViews;
+        let higherOrLowerQuery = req.query.higherOrLower;
+        let desiredViewsInt: number = parseInt(desiredViewsQuery!);
+        let higherOrLowerBool: boolean = (higherOrLowerQuery === 'true');
+        await filterviews(desiredViewsInt,higherOrLowerBool);
+        console.log(desiredViewsInt+", "+higherOrLowerBool);
         res.status(200).send();
     } catch (err) {
         console.error(err);
@@ -81,10 +86,31 @@ router.get('/filterViews', async (req, res, next) => {
 
 router.get('/filterLikes', async (req, res, next) => {
     try {
-        let desiredLikes = req.query.desiredLikes
-        let higherOrLower = req.query.higherOrLower
-        //await filterGenre(actionGenre,horrorGenre,comedyGenre);
-        console.log(desiredLikes+", "+higherOrLower);
+        let desiredLikesQuery = req.query.desiredLikes;
+        let higherOrLowerQuery = req.query.higherOrLower;
+        let desiredLikesInt: number = parseInt(desiredLikesQuery!);
+        let higherOrLowerBool: boolean = (higherOrLowerQuery === 'true');
+        await filterLikes(desiredLikesInt,higherOrLowerBool);
+        console.log(desiredLikesInt+", "+higherOrLowerBool);
+        res.status(200).send();
+    } catch (err) {
+        console.error(err);
+        next(err);
+    }
+});
+
+router.get('/search', async (req, res, next) => {
+    try {
+        let desiredFilmTitle = req.query.filmTitle;
+        let horrorQuery = req.query.horrorGenre;
+        let comedyQuery = req.query.comedyGenre;
+        let actionQuery = req.query.actionGenre;
+        let horrorBool: boolean = (horrorQuery === 'true');
+        let comedyBool: boolean = (comedyQuery === 'true');
+        let actionBool: boolean = (actionQuery === 'true');
+        let FilmString: string = desiredFilmTitle!;
+        await filterKeyword(FilmString,comedyBool,horrorBool,actionBool);
+        console.log();
         res.status(200).send();
     } catch (err) {
         console.error(err);
