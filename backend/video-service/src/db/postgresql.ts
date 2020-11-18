@@ -37,49 +37,51 @@ export const connectDB = async (): Promise<void> => {
     }
 };*/
 
-export const addFilm = async ( length: number, title: string, action: boolean, horror: boolean, comedy: boolean): Promise<void> => {
+export const addFilm = async ( length: number, title: string, comedy: boolean, horror: boolean, action: boolean): Promise<void> => {
     try {
+        let vid: number = 555;              //TODO determine if we want to generate vid here or in video.ts
         const query = {
-            text: 'INSERT INTO film(length, title) VALUES($1) VALUES($2)',
-            values: [length,title]
+            text: 'INSERT INTO video(vid, filmlength, title, likes, dislikes, views) VALUES($1, $2, $3, $4, $4, $4);',
+            values: [vid,length,title, 0]
         };
         const result = await client.query(query);
         console.log(result);
         const Genrequery = {
-            text: 'INSERT INTO genre(action, horror, comedy) VALUES($1) VALUES($2) VALUES($3)',
-            values: [action, horror, comedy]
+            text: 'INSERT INTO genres(vid, comedy, horror, action) VALUES($1, $2, $3, $4);',
+            values: [vid, comedy, horror, action]
         };
         const Genreresult = await client.query(Genrequery);
-        console.log(Genreresult);
+        console.log('Genre Result is: '+Genreresult);
     }catch(error){
         console.log(error);
     }
 };
 
-export const addPerson = async (name: string, email: string, password: string, planType: string): Promise<void> => {      //Let user generate uid? I think we should generate for them
+export const addPerson = async (name: string, email: string, password: string, planType?: string): Promise<void> => {      //Let user generate uid? I think we should generate for them
     try {
+        let uid: number=12345;
         const query = {
-            text: 'INSERT INTO test(username,email,password) VALUES($1) VALUES($2) VALUES($3)',
-            values: [name,email,password]
+            text: 'INSERT INTO users(uid,username,email,password) VALUES($1, $2, $3, $4);',
+            values: [uid,name,email,password]
         };
         const result = await client.query(query);
         console.log(result);
-        const Planquery = {
+        /*const Planquery = {
             text: 'INSERT INTO plan(type) VALUES($1)',
             values: [planType]
         };
         const Planresult = await client.query(query);
-        console.log(result);
+        console.log(result);*/
     } catch (err) {
         console.error(err);
     }
 };
 
-export const filterGenre = async (actionGenre: boolean, horrorGenre: boolean, comedyGenre: boolean): Promise<void> => {
+export const filterGenre = async (comedyGenre: boolean, horrorGenre: boolean, actionGenre: boolean): Promise<void> => {
     try {
         const query = {
-            text: 'SELECT Videos.title FROM Videos WHERE Videos.vid IN (SELECT vid FROM Genres WHERE Genres.comedy = comedyGenre AND Genres.horror = horrorGenre AND Genres.action = actionGenre) VALUES($3) VALUES($2) VALUES($1)',
-            values: [actionGenre,horrorGenre,comedyGenre]
+            text: 'SELECT title FROM video WHERE vid IN (SELECT vid FROM Genres WHERE comedy = $1 AND horror = $2 AND action = $3);',
+            values: [comedyGenre,horrorGenre,actionGenre]
         };
         const result = await client.query(query);
         console.log(result);
@@ -95,7 +97,7 @@ export const filterviews = async (desiredViews: number,higherOrLower: boolean): 
         if(higherOrLower===true)
         {
             const query = {
-                text: 'SELECT Videos.title, Videos.views FROM Videos WHERE Videos.views > desiredViews ORDER BY Videos.views VALUES($1)',
+                text: 'SELECT title, views FROM video WHERE views > $1 ORDER BY views',
                 values: [desiredViews]
             };
             const result = await client.query(query);
@@ -105,7 +107,7 @@ export const filterviews = async (desiredViews: number,higherOrLower: boolean): 
         else
         {
             const query = {
-                text: 'SELECT Videos.title, Videos.views FROM Videos WHERE Videos.views < desiredViews ORDER BY Videos.views VALUES($1)',
+                text: 'SELECT title, views FROM video WHERE views < $1 ORDER BY views',
                 values: [desiredViews]
             };
             const result = await client.query(query);
@@ -122,7 +124,7 @@ export const filterLikes = async (desiredLikes: number,higherOrLower: boolean): 
         if(higherOrLower===true)
         {
             const query = {
-                text: 'SELECT Videos.title, Videos.views FROM Videos WHERE Videos.likes > desiredLikes ORDER BY Videos.likes VALUES($1)',
+                text: 'SELECT title, likes FROM video WHERE likes > $1 ORDER BY likes',
                 values: [desiredLikes]
             };
             const result = await client.query(query);
@@ -132,7 +134,7 @@ export const filterLikes = async (desiredLikes: number,higherOrLower: boolean): 
         else
         {
             const query = {
-                text: 'SELECT Videos.title, Videos.views FROM Videos WHERE Videos.likes < desiredLikes ORDER BY Videos.Likes VALUES($1)',
+                text: 'SELECT title, likes FROM video WHERE likes < $1 ORDER BY likes',
                 values: [desiredLikes]
             };
             const result = await client.query(query);
@@ -143,13 +145,12 @@ export const filterLikes = async (desiredLikes: number,higherOrLower: boolean): 
     }
 };
 
-export const filterKeyword = async (desiredLikes: number,higherOrLower: boolean): Promise<void> => {
+export const filterKeyword = async (keyword: string, comedyGenre: boolean, horrorGenre: boolean, actionGenre: boolean): Promise<void> => {
     try {
-        //TODO figure out how to put array into the keyword section, not sure, maybe like %values($1)%?
-
+        console.log("Our keyword is :" + keyword);
         const query = {
-            text: 'SELECT Videos.title FROM Videos WHERE Videos.title LIKE %keyword%',      
-            values: [desiredLikes]
+            text: 'SELECT Video.title FROM Video WHERE Video.title LIKE \'%\' || $1 || \'%\' AND vid IN (SELECT vid FROM Genres WHERE comedy = $2 AND horror = $3 AND action = $4)',      
+            values: [keyword,comedyGenre,horrorGenre,actionGenre]
         };
         const result = await client.query(query);
         console.log(result);
