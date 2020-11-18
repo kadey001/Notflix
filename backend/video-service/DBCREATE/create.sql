@@ -5,7 +5,7 @@ DROP TABLE IF EXISTS Plan;
 
 -- Entities
 
-CREATE TABLE User (
+CREATE TABLE Users (
     uid BIGINT NOT NULL,
     email VARCHAR(64) NOT NULL,
     username VARCHAR(64) NOT NULL,
@@ -14,27 +14,27 @@ CREATE TABLE User (
 );
 
 CREATE TABLE Video (
-    vid BIGINT NOT NULL,  -- Cinema ID
+    vid BIGINT NOT NULL,
     filmLength BIGINT NOT NULL,
-    title VARCHAR(64) NOT NULL,  -- Cinema name
-    likes INTEGER NOT NULL,  -- Number of theaters
-    dislikes INTEGER NOT NULL,  -- Number of theaters
-    views INTEGER NOT NULL,  -- Number of theaters
+    title VARCHAR(64) NOT NULL,
+    likes INTEGER NOT NULL,
+    dislikes INTEGER NOT NULL,
+    views INTEGER NOT NULL,
     PRIMARY KEY(vid)
 );
 
 CREATE TABLE Genres (
-    vid BIGINT NOT NULL,  -- Theater ID
-    comedy BIT NOT NULL,  -- Theater name
-    horror BIT NOT NULL,  -- Theater name
-    action BIT NOT NULL,  -- Theater name
+    vid BIGINT NOT NULL,
+    comedy BOOLEAN NOT NULL,
+    horror BOOLEAN NOT NULL,
+    action BOOLEAN NOT NULL,
     PRIMARY KEY(vid),
     FOREIGN KEY(vid) REFERENCES Video(vid)
 );
 
 CREATE TABLE Plan (
-    uid BIGINT NOT NULL,  -- Cinema seat ID
-    planType VARCHAR(64) NOT NULL,  -- Cinema name
+    uid BIGINT NOT NULL,
+    planType VARCHAR(64) NOT NULL,
     PRIMARY KEY(uid),
-    FOREIGN KEY(uid) REFERENCES User(uid)
+    FOREIGN KEY(uid) REFERENCES Users(uid)
 );
