@@ -21,7 +21,7 @@ router.post('/newPerson', async (req, res, next) => {
         const { email } = req.body as { email: string };
         const { password } = req.body as { password: string };
         const { planType } = req.body as { planType?: string };
-        //await addFilm(filmLength,filmTitle,actionGenre,horrorGenre,comedyGenre);
+        await addPerson(name,email,password,planType);
         console.log(name+", "+email+", "+password+", "+planType)
         res.status(200).send();
     } catch (err) {
