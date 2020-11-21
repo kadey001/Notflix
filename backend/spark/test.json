@@ -1,0 +1,24 @@
+{
+  "0": [
+    {
+      "comment": "This is a test comment.",
+      "timestamp": "Friday, 25-Dec-20 00:00:00 UTC",
+      "likes": 10,
+      "dislikes": 2
+    },
+    {
+      "comment": "This is a second test comment.",
+      "timestamp": "Friday, 21-Dec-20 00:00:00 UTC",
+      "likes": 5,
+      "dislikes": 0
+    }
+  ],
+  "666": [
+    {
+      "comment": "This is a third test comment.",
+      "timestamp": "Friday, 15-Dec-20 00:00:00 UTC",
+      "likes": 2,
+      "dislikes": 10
+    }
+  ]
+}
