@@ -3,7 +3,7 @@ import React, { useState, useEffect, forwardRef } from "react";
 import { css, jsx } from "@emotion/react";
 import Icon from "../../components/Icon/Icon";
 
-const leftLinks = ["Upload", "My Library"];
+const leftLinks = ["Upload", "My Library", "Subscriptions"];
 
 const BrowseHeader = forwardRef((props, ref) => {
   const [scrolled, setScrolled] = useState(false);

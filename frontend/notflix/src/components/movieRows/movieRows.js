@@ -73,6 +73,7 @@ const MovieRows = ({ category, setActive }) => {
                 <div className="content">
                   <Icon type="play" onClick={handleOnSubmit} />
                   <Icon type="info-circle" onClick={getPos} />
+                  <Icon type="thumbs-up" />
                 </div>
               )}
               <img src={img} />
@@ -97,7 +98,8 @@ const ContentCard = styled.div`
     align-items: center;
     height: 100%;
     width: 100%;
-    justify-content: center;
+    padding-left: 20px;
+    justify-content: space-evenly;
     transition: background-color ease 0.2s;
 
     &:hover {
