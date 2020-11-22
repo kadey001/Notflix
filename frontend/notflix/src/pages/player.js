@@ -22,6 +22,7 @@ const GlobalCSS = css`
   * {
     box-sizing: border-box;
     font-family: "Roboto", sans-serif;
+    outline: none;
   }
   html,
   body,
