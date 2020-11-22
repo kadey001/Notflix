@@ -1,5 +1,6 @@
 import styled from "styled-components/macro";
 import { Link as ReactRouterLink } from "react-router-dom";
+
 export const Background = styled.div`
   display: flex;
   flex-direction: column;
@@ -55,4 +56,41 @@ export const ButtonLink = styled(ReactRouterLink)`
   &:hover {
     background-color: #f40612;
   }
+`;
+
+export const ButtonLink2 = styled(ReactRouterLink)`
+  display: block;
+  background-color: #e50914;
+  width: 94px;
+  height: fit-content;
+  color: white;
+  border: 0;
+  font-size: 15px;
+  border-radius: 3px;
+  padding: 8px 17px;
+  cursor: pointer;
+  text-decoration: none;
+  box-sizing: border-box;
+
+  &:hover {
+    background-color: #f40612;
+  }
+`;
+export const Link = styled.p`
+  color: #fff;
+  text-decoration: none;
+  margin-right: 30px;
+  font-weight: ${({ active }) => (active === "true" ? "700" : "normal")};
+  cursor: pointer;
+  &:hover {
+    font-weight: bold;
+  }
+  &:last-of-type {
+    margin-right: 0;
+  }
+`;
+
+export const Group = styled.div`
+  display: flex;
+  align-items: center;
 `;
