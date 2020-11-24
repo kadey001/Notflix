@@ -60,6 +60,9 @@ const MovieRows = ({ category, setActive }) => {
           css={css`
             overflow-x: scroll;
             overflow-y: hidden;
+            -webkit-scrollbar {
+              display: none;
+            }
           `}
         >
           {content.map((img) => (

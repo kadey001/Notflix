@@ -1,0 +1,28 @@
+.filepond--root,
+.filepond--root .filepond--drop-label {
+  height: 100px;
+  width: 500px;
+
+  color: black;
+}
+.filepond--root {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+.filepond--root .filepond--panel-root {
+  background-color: red;
+}
+.filepond--item {
+  width: calc(50% - 0.5em);
+}
+@media (min-width: 30em) {
+  .filepond--item {
+    width: calc(50% - 0.5em);
+  }
+}
+
+@media (min-width: 50em) {
+  .filepond--item {
+    width: calc(33.33% - 0.5em);
+  }
+}

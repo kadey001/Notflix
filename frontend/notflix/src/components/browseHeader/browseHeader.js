@@ -42,11 +42,27 @@ const BrowseHeader = forwardRef((props, ref) => {
           </a>
         </li>
 
-        {leftLinks.map((link) => (
+        {/* {leftLinks.map((link) => (
           <li key={link}>
             <a href="/">{link}</a>
           </li>
-        ))}
+        ))} */}
+
+        <li>
+          <a href="/upload">
+            <p> Upload </p>
+          </a>
+        </li>
+        <li>
+          <a href="/library">
+            <p> My Library </p>
+          </a>
+        </li>
+        <li>
+          <a href="/subscriptions">
+            <p> Subscriptions </p>
+          </a>
+        </li>
       </ul>
 
       <ul className="right">
