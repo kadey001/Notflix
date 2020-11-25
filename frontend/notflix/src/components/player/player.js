@@ -1,18 +1,19 @@
 import React, { Component } from "react";
-import ReactPlayer from "react-player";
-import "./player.css";
 import { css, jsx } from "@emotion/react";
+import { Player } from "video-react";
+import "video-react/dist/video-react.css";
 
-const Player = () => {
+import vid from "../../videos/shrek.mp4";
+
+const file = [vid];
+
+const VideoPlayer = () => {
   return (
-    <div className="player-wrapper">
-      <ReactPlayer
-        className="react-player"
-        url="https://www.youtube.com/watch?v=ysz5S6PUM-U"
-        width="100%"
-        height="100%"
-      />
+    <div>
+      {file.map((video) => (
+        <Player src={video} />
+      ))}
     </div>
   );
 };
-export default Player;
+export default VideoPlayer;

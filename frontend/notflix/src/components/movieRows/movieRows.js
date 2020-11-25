@@ -6,6 +6,7 @@ import styled from "@emotion/styled";
 import Icon from "../../components/Icon/Icon";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useHistory } from "react-router-dom";
+
 import one from "../../img/one.jpg";
 import two from "../../img/two.jpg";
 import three from "../../img/three.jpg";

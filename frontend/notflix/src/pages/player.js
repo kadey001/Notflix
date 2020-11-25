@@ -2,19 +2,19 @@ import React, { useState, useEffect } from "react";
 import Footer from "../components/footer/footer";
 import PlayerHeader from "../components/playerHeader/playerHeader";
 import { Global, css } from "@emotion/react";
-//import VideoPlayer from "../components/player/player";
+import Player from "../components/player/player";
 import HeaderJumbotron from "../components/headerJumbotron/headerJumbotron";
-import { Player } from "video-react";
-import "video-react/dist/video-react.css";
 
 export default function VideoPlayer() {
   return (
     <>
       <Global styles={GlobalCSS} />
       <PlayerHeader />
+      <Player />
+
       {/* <div style={divStyle}></div> */}
 
-      <Player src="/videos/shrek.mp4" />
+      {/* <Player src="/videos/shrek.mp4" /> */}
     </>
   );
 }
