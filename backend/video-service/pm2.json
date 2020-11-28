@@ -1,0 +1,22 @@
+{
+  "apps": [
+    {
+      "name": "notflix",
+      "exec_mode": "cluster",
+      "instances": "max",
+      "script": "./src/server/server.ts",
+      "interpreter": "ts-node",
+      "env": {
+        "ENV": "development",
+        "ORIGIN": "0.0.0.0",
+        "PORT": 3001,
+        "BCRYPT_KEY": "secret",
+        "PGUSER": "postgres",
+        "PGPASSWORD": "postgres",
+        "PGDATABASE": "test",
+        "PGHOST": "db",
+        "DB_PORT": 5432
+      }
+    }
+  ]
+}
