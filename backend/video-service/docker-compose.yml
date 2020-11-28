@@ -6,7 +6,7 @@ services:
             context: .
             target: base-step
         ports:
-            - '3000:3000'
+            - '3001:3000'
         command: yarn start
         volumes:
             - ./src:/usr/app/src
