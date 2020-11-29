@@ -11,10 +11,6 @@ export default function VideoPlayer() {
       <Global styles={GlobalCSS} />
       <PlayerHeader />
       <Player />
-
-      {/* <div style={divStyle}></div> */}
-
-      {/* <Player src="/videos/shrek.mp4" /> */}
     </>
   );
 }
