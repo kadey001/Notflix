@@ -19,6 +19,7 @@ const content = [one, two, three, four, five, six];
 const MovieRows = ({ category, setActive }) => {
   const [hovered, setHovered] = useState(false);
   const history = useHistory();
+  const [vid, setVid] = useState(1);
 
   const handleHover = useCallback((e) => {
     e.type === "mouseenter"
@@ -31,7 +32,7 @@ const MovieRows = ({ category, setActive }) => {
     setActive({ category, pos });
   }, []);
   function handleOnSubmit() {
-    history.push(`/watch`);
+    history.push(`/watch/${vid}`);
   }
   return (
     <div

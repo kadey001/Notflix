@@ -18,7 +18,7 @@ export default function App() {
       <Route exact path="/browse">
         <Browse />
       </Route>
-      <Route exact path="/watch:vid">
+      <Route exact path="/watch/:vid">
         <Watch />
       </Route>
       <Route exact path="/upload/">

@@ -61,7 +61,6 @@ const GlobalCSS = css`
     color: white;
   }
 `;
-const divStyle = {
-  color: "black",
-  height: 300,
-};
+const divStyle = css`
+  padding-top: "100px";
+`;
