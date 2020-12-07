@@ -2,11 +2,13 @@
 import React, { useState, useEffect, forwardRef } from "react";
 import { css, jsx } from "@emotion/react";
 import Icon from "../../components/Icon/Icon";
+import { useHistory, useParams } from "react-router-dom";
 
 const leftLinks = ["Home", "Upload", "My Library"];
 
 const BrowseHeader = forwardRef((props, ref) => {
   const [scrolled, setScrolled] = useState(false);
+  const history = useHistory();
 
   useEffect(() => {
     const handleScroll = () =>
@@ -37,13 +39,16 @@ const BrowseHeader = forwardRef((props, ref) => {
     >
       <ul>
         <li>
-          <a href="/browse">
-            <ul>
-              <li>
-                <Icon type="arrow-left" />
-              </li>
-            </ul>
-          </a>
+          <ul>
+            <li>
+              <Icon
+                type="arrow-left"
+                onClick={() => {
+                  history.goBack();
+                }}
+              />
+            </li>
+          </ul>
         </li>
       </ul>
     </nav>

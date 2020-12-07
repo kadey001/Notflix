@@ -6,20 +6,24 @@ import { useHistory } from "react-router-dom";
 
 export default function Signup() {
   const history = useHistory();
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [emailAddress, setEmailAddress] = useState("");
-  const [password, setPassword] = useState("");
+  const [userData, setUserData] = useState({
+    firstName: "",
+    lastName: "",
+    emailAddress: "",
+    password: "",
+  });
   const [error, setError] = useState("");
   const isInvalid =
-    firstName === "" ||
-    lastName === "" ||
-    password === "" ||
-    emailAddress === "";
+    userData.firstName === "" ||
+    userData.lastName === "" ||
+    userData.password === "" ||
+    userData.emailAddress === "";
 
   const handleSignUp = (event) => {
     event.preventDefault();
     //handle signup request here
+    const options = {};
+    console.log(userData);
   };
 
   return (
@@ -31,25 +35,33 @@ export default function Signup() {
         <Form.Base onSubmit={handleSignUp} method="POST">
           <Form.Input
             placeholder="First name"
-            value={firstName}
-            onChange={({ target }) => setFirstName(target.value)}
+            value={userData.firstName}
+            onChange={({ target }) =>
+              setUserData({ ...userData, firstName: target.value })
+            }
           />
           <Form.Input
             placeholder="Last name"
-            value={lastName}
-            onChange={({ target }) => setLastName(target.value)}
+            value={userData.lastName}
+            onChange={({ target }) =>
+              setUserData({ ...userData, lastName: target.value })
+            }
           />
           <Form.Input
             placeholder="Email address"
-            value={emailAddress}
-            onChange={({ target }) => setEmailAddress(target.value)}
+            value={userData.emailAddress}
+            onChange={({ target }) =>
+              setUserData({ ...userData, emailAddress: target.value })
+            }
           />
           <Form.Input
             type="password"
             autoComplete="off"
             placeholder="Password"
-            value={password}
-            onChange={({ target }) => setPassword(target.value)}
+            value={userData.password}
+            onChange={({ target }) =>
+              setUserData({ ...userData, password: target.value })
+            }
           />
           <Form.Submit disabled={isInvalid} type="submit">
             Sign Up
