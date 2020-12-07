@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { addPerson } from '../db/postgresql';
+import { addPerson,changePlan } from '../db/postgresql';
 
 const router = express.Router();
 
@@ -20,9 +20,24 @@ router.post('/newPerson', async (req, res, next) => {
         const { name } = req.body as { name: string };
         const { email } = req.body as { email: string };
         const { password } = req.body as { password: string };
-        const { planType } = req.body as { planType?: string };
+        const { planType } = req.body as { planType: number };
         await addPerson(name,email,password,planType);
         console.log(name+", "+email+", "+password+", "+planType)
+        res.status(200).send();
+    } catch (err) {
+        console.error(err);
+        next(err);
+    }
+    //console.log(name);
+    //res.status(200).json({result: "The result is "+name}).send();
+});
+
+router.post('/updatePlan', async (req, res, next) => {
+    try {
+        let name = req.query.name!
+        let password = req.query.password;
+        let plan = parseInt(req.query.plan!);
+        await changePlan(name,password,planType);
         res.status(200).send();
     } catch (err) {
         console.error(err);

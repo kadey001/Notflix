@@ -1,6 +1,7 @@
 import express from 'express';
+import { release } from 'os';
 
-import { addFilm, filterGenre, filterviews, filterLikes, filterKeyword } from '../db/postgresql';
+import { addFilm, filterGenre, filterviews, filterLikes, filterKeyword, topVids, incrementView } from '../db/postgresql';
 
 const router = express.Router();
 
@@ -38,8 +39,9 @@ router.post('/newfilm', async (req, res, next) => {
         const { horrorGenre } = req.body as { horrorGenre: boolean };
         const { comedyGenre } = req.body as { comedyGenre: boolean };
         const { actionGenre } = req.body as { actionGenre: boolean };
-        await addFilm(filmLength,filmTitle,comedyGenre,horrorGenre,actionGenre);
-        console.log(filmTitle+", "+filmLength+", "+horrorGenre+", "+comedyGenre+", "+actionGenre);
+        const { releaseDate } = req.body as { releaseDate: Date };
+        await addFilm(filmLength,filmTitle,comedyGenre,horrorGenre,actionGenre,releaseDate);
+        console.log(filmTitle+", "+filmLength+", "+horrorGenre+", "+comedyGenre+", "+actionGenre+", "+releaseDate);
         res.status(200).send();
     } catch (err) {
         console.error(err);
@@ -111,6 +113,33 @@ router.get('/search', async (req, res, next) => {
         let FilmString: string = desiredFilmTitle!;
         await filterKeyword(FilmString,comedyBool,horrorBool,actionBool);
         console.log();
+        res.status(200).send();
+    } catch (err) {
+        console.error(err);
+        next(err);
+    }
+});
+
+router.get('/topVideos', async (req, res, next) => {
+    try {
+        let desiredViewsQuery = req.query.desiredViews;
+        let desiredVideosQuery = req.query.desiredVideos
+        let desiredViewsInt: number = parseInt(desiredViewsQuery!);
+        let desiredVideosInt: number = parseInt(desiredVideosQuery!);
+        await topVids(desiredViewsInt,desiredVideosInt);
+        res.status(200).send();
+    } catch (err) {
+        console.error(err);
+        next(err);
+    }
+});
+
+//Need to figure out how to make this compatible with uuid
+router.post('/watchVid', async (req, res, next) => {
+    try {
+        let videoID = parseInt(req.query.vid!);
+        //let videoID: number = videoIDQuery;
+        await incrementView(videoID);
         res.status(200).send();
     } catch (err) {
         console.error(err);

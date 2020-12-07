@@ -1,40 +1,46 @@
-DROP TABLE IF EXISTS User;
-DROP TABLE IF EXISTS Video;
-DROP TABLE IF EXISTS Genres;
-DROP TABLE IF EXISTS Plan;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS video;
+DROP TABLE IF EXISTS genres;
+DROP TABLE IF EXISTS plan;
 
--- Entities
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE Users (
-    uid BIGINT NOT NULL,
+CREATE TABLE users (
+    uid uuid DEFAULT uuid_generate_v4() NOT NULL,
     email VARCHAR(64) NOT NULL,
     username VARCHAR(64) NOT NULL,
     password VARCHAR(64) NOT NULL,
+    plantype INTEGER NOT NULL,
     PRIMARY KEY(uid)
 );
 
-CREATE TABLE Video (
-    vid BIGINT NOT NULL,
+CREATE TABLE video (
+    vid uuid DEFAULT uuid_generate_v4() NOT NULL,
     filmLength BIGINT NOT NULL,
     title VARCHAR(64) NOT NULL,
+    description VARCHAR(500) NOT NULL,
     likes INTEGER NOT NULL,
     dislikes INTEGER NOT NULL,
     views INTEGER NOT NULL,
+    released DATE NOT NULL,
     PRIMARY KEY(vid)
 );
 
-CREATE TABLE Genres (
-    vid BIGINT NOT NULL,
+CREATE TABLE genres (
+    vid uuid NOT NULL,
     comedy BOOLEAN NOT NULL,
     horror BOOLEAN NOT NULL,
     action BOOLEAN NOT NULL,
+    fantasy BOOLEAN NOT NULL,
+    drama BOOLEAN NOT NULL,
+    documentary BOOLEAN NOT NULL,
     PRIMARY KEY(vid),
-    FOREIGN KEY(vid) REFERENCES Video(vid)
+    FOREIGN KEY(vid) REFERENCES video(vid)
 );
 
-CREATE TABLE Plan (
-    uid BIGINT NOT NULL,
-    planType VARCHAR(64) NOT NULL,
+CREATE TABLE plan (
+    uid uuid NOT NULL,
+    planType INTEGER NOT NULL,
     PRIMARY KEY(uid),
-    FOREIGN KEY(uid) REFERENCES Users(uid)
+    FOREIGN KEY(uid) REFERENCES users(uid)
 );
