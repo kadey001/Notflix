@@ -1,9 +1,9 @@
-import express from 'express';
+import express, { NextFunction } from 'express';
 import WebHDFS from 'webhdfs';
 import http from 'http';
 import request from 'request';
 
-import { addFilm, filterGenre, filterviews, filterLikes, filterKeyword } from '../db/postgresql';
+import { addFilm, filterGenre, filterviews, filterLikes, filterKeyword, Genres, MovieInfo, countView } from '../db/queries';
 
 const router = express.Router();
 const hdfs = WebHDFS.createClient({
@@ -13,11 +13,7 @@ const hdfs = WebHDFS.createClient({
     path: '/webhdfs/v1'
 });
 
-router.get('/view', (req, res, next) => {
-    if (!req.query.vid) {
-        res.status(400).send('Undefined vid');
-    }
-    const path = `/home/videos/${req.query.vid}/movie.mp4`;
+const streamFromHDFS = (path: string, req: any, res: any, next: NextFunction) => {
     // Get stats from video w/ SQL
     const options = {
         host: 'localhost',
@@ -25,6 +21,7 @@ router.get('/view', (req, res, next) => {
         port: '9870',
         method: 'GET'
     }
+
     const statReq = http.request(options, (statRes) => {
         statRes.on('data', data => {
             const parsedData = JSON.parse(data);
@@ -101,9 +98,6 @@ router.get('/view', (req, res, next) => {
                     res.end('Server error');
                     next(err);
                 });
-                // stream.on('close', () => { // pipe & socket additional events
-                //     console.log('File Closing (200 Response)');
-                // });
                 if (stream == null)
                     res.end();
                 else {
@@ -123,6 +117,27 @@ router.get('/view', (req, res, next) => {
         console.error(err);
     });
     statReq.end();
+};
+
+router.get('/view', (req, res, next) => {
+    if (!req.query.vid) {
+        res.status(400).send('Undefined vid');
+    }
+    const path = `/home/videos/${req.query.vid}/movie.mp4`;
+    streamFromHDFS(path, req, res, next);
+});
+
+router.get('/view-thumbnail', (req, res, next) => {
+    if (!req.query.vid) {
+        res.status(400).send('Undefined vid');
+        return;
+    }
+    if (!req.query.filetype) {
+        res.status(400).send('Undefined filetype');
+        return;
+    }
+    const path = `/home/videos/${req.query.vid}/thumbnail.${req.query.filetype}`;
+    streamFromHDFS(path, req, res, next);
 });
 
 // router.get('/get-previous-view-time', async (req, res, next) => {
@@ -135,32 +150,44 @@ router.get('/view', (req, res, next) => {
 //     res.status(200).json({ result: 0.0 })
 // });
 
-router.get('/watch/', (req, res, next) => {
+router.get('/count-view', async (req, res, next) => {
     //const { videoID } = req.query.videoID; // Get video id from params
-    const videoID = req.query.videoID;
-    console.log("does this print to our terminal or post " + videoID);
-    console.log("This is our comment ID with console dir " + req.query.commentID);
-    //res.status(200).json({result: "The result of id is "+req.params.id}).send();
+    const vid = req.query.vid;
+    await countView(vid as string);
     res.status(200).send();
 });
 
-router.post('/test', (req, res, next) => {
-    const { name } = req.body as { name: string };
-    console.log(name);
-    res.status(200).json({ result: "The result is " + name }).send();
-});
-
+const parseGenres = (genres: Genres) => {
+    if (!genres.action)
+        genres.action = false;
+    if (!genres.comedy)
+        genres.comedy = false;
+    if (!genres.drama)
+        genres.drama = false;
+    if (!genres.fantasy)
+        genres.fantasy = false;
+    if (!genres.documentary)
+        genres.documentary = false;
+}
 
 //is user making vid or we generate one here and pass it into query?
-router.post('/newfilm', async (req, res, next) => {
+router.post('/add-movie', async (req, res, next) => {
     try {
-        const { filmTitle } = req.body as { filmTitle: string };
-        const { filmLength } = req.body as { filmLength: number };
-        const { horrorGenre } = req.body as { horrorGenre: boolean };
-        const { comedyGenre } = req.body as { comedyGenre: boolean };
-        const { actionGenre } = req.body as { actionGenre: boolean };
-        await addFilm(filmLength, filmTitle, comedyGenre, horrorGenre, actionGenre);
-        console.log(filmTitle + ", " + filmLength + ", " + horrorGenre + ", " + comedyGenre + ", " + actionGenre);
+        // const { title, description, length } = req.body as AddMovieRequest;
+        const movieInfo = req.body as MovieInfo;
+        if (!movieInfo.title || !movieInfo.length) {
+            res.status(400).send('Undefined Movie Info');
+            return;
+        }
+        let { released } = req.body as { released: string };
+        if (released === '') {
+            released = Date.toString();
+        }
+        movieInfo.releaseDate = new Date();
+        parseGenres(movieInfo);
+        console.log(movieInfo);
+        await addFilm(movieInfo);
+        // Maybe get back vid from addFilm call and return so that put webhdfs call can be made on front end (easier with fs)
         res.status(200).send();
     } catch (err) {
         console.error(err);
@@ -168,16 +195,19 @@ router.post('/newfilm', async (req, res, next) => {
     }
 });
 
-router.get('/filterGenre', async (req, res, next) => {
+router.get('/filter-genre', async (req, res, next) => {
     try {
-        let horrorQuery = req.query.horrorGenre;
-        let comedyQuery = req.query.comedyGenre;
-        let actionQuery = req.query.actionGenre;
-        let horrorBool = (horrorQuery === 'true');
-        let comedyBool = (comedyQuery === 'true');
-        let actionBool = (actionQuery === 'true');
-        await filterGenre(comedyBool, horrorBool, actionBool);
-        console.log(comedyBool + ", " + horrorBool + ", " + actionBool);
+        const genres = req.body as Genres;
+        parseGenres(genres);
+        const vids: Set<any> = await filterGenre(genres);
+        // Create thumbnail link for each vid from list of vids in response
+        const response = [];
+        vids.forEach((vid) => {
+            response.push({
+                vid,
+                img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`
+            })
+        });
         res.status(200).send();
     } catch (err) {
         console.error(err);
@@ -185,12 +215,7 @@ router.get('/filterGenre', async (req, res, next) => {
     }
 });
 
-/*router.get('/video/:id', (req, res, next) => {
-    const { id } = req.params; // Get video id from params
-    res.status(200).send();
-});*/
-
-router.get('/filterViews', async (req, res, next) => {
+router.get('/filter-views', async (req, res, next) => {
     try {
         let desiredViewsQuery = req.query.desiredViews;
         let higherOrLowerQuery = req.query.higherOrLower;
@@ -205,7 +230,7 @@ router.get('/filterViews', async (req, res, next) => {
     }
 });
 
-router.get('/filterLikes', async (req, res, next) => {
+router.get('/filter-likes', async (req, res, next) => {
     try {
         let desiredLikesQuery = req.query.desiredLikes;
         let higherOrLowerQuery = req.query.higherOrLower;
@@ -222,15 +247,15 @@ router.get('/filterLikes', async (req, res, next) => {
 
 router.get('/search', async (req, res, next) => {
     try {
-        let desiredFilmTitle = req.query.filmTitle;
-        let horrorQuery = req.query.horrorGenre;
-        let comedyQuery = req.query.comedyGenre;
-        let actionQuery = req.query.actionGenre;
-        let horrorBool = (horrorQuery === 'true');
-        let comedyBool = (comedyQuery === 'true');
-        let actionBool = (actionQuery === 'true');
-        let FilmString = desiredFilmTitle as string;
-        await filterKeyword(FilmString, comedyBool, horrorBool, actionBool);
+        const genres = req.body as Genres;
+        // Undefined genere defaults to false
+        parseGenres(genres);
+        const keyword = req.query.keyword as string;
+        if (keyword === '') {
+            res.status(400).send('No keyword provided');
+            res.end();
+        }
+        await filterKeyword(keyword, genres);
         console.log();
         res.status(200).send();
     } catch (err) {
@@ -238,16 +263,5 @@ router.get('/search', async (req, res, next) => {
         next(err);
     }
 });
-
-/*router.post('/test', async (req, res, next) => {
-    try {
-        const { name } = req.body as { name: string };
-        await addPerson(name);
-        res.status(200).send();
-    } catch (err) {
-        console.error(err);
-        next(err);
-    }
-});*/
 
 export default router;
