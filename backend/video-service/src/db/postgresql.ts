@@ -1,23 +1,13 @@
-import { Pool, Client } from 'pg';
-import { v4 as uuidv4 } from 'uuid';
-
-// export const pool = new Pool({
-//     user: 'postgres',
-//     password: 'postgres',
-//     database: 'postgres',
-//     max: 20,
-//     connectionTimeoutMillis: 1000, // 1 second
-//     host: 'localhost'
-// });
+import { Pool } from 'pg';
 export const client = new Pool();
 
 // the pool will emit an error on behalf of any idle clients
 // it contains if a backend error or network partition happens
-// pool.on('error', (err, poolClient) => {
-//     console.error('Unexpected error on idle client', err);
-//     console.log('Client: ', poolClient);
-//     process.exit(-1);
-// });
+client.on('error', (err, poolClient) => {
+    console.error('Unexpected error on idle client', err);
+    console.log('Client: ', poolClient);
+    process.exit(-1);
+});
 
 export const connectDB = async (): Promise<void> => {
     try {
@@ -27,121 +17,3 @@ export const connectDB = async (): Promise<void> => {
         console.error(err);
     }
 };
-
-
-//TODO if this one is approved, figure out a way to remove a vid from a liked/disliked attribute
-//Liked vids is the attribute attached to user, same for disliked vids
-/*export const LikeOrDislike = async (vid: number, LikeVote: boolean,uid: number, likedvids: number[], dislikedvids: number[]): Promise<void> => {     //where user has the new attributes
-    try {
-        let PrevInteract: Boolean = false;
-        //If the user DID like the video
-        if(LikeVote)
-        {
-            //Check if the user has previously liked the video in question
-            likedvids.forEach(
-                //If this if statement has true, then the user has previously liked the video, will then proceed to unlike it
-                element => if(element===vid)
-                {
-                    PrevInteract = true;
-                    const query = {
-                    text: 'UPDATE Videos SET Videos.Likes = Videos.Likes - 1 WHERE Videos.vid = vid VALUES($1)',
-                    values: [vid]
-                    }
-                    const result = await client.query(query);
-                    console.log(result);
-                }
-                )
-            //If the previous forEach did not find that the user previously liked the video, check if the user previously disliked the video
-            dislikedvids.forEach(
-                //If this if statement has true, then the user has previously disliked the video, will then proceed to like it
-                element => if(element===vid)
-                {
-                    PrevInteract = true;
-                    const query = {
-                    text: 'UPDATE Videos SET Videos.Dislikes = Videos.Dislikes - 1, Videos.Likes = Videos.Likes + 1 WHERE Videos.vid = vid VALUES($1)',
-                    values: [vid]
-                    }
-                    const result = await client.query(query);
-                    console.log(result);
-                }
-                )
-                //If the user has not interacted with the video at all
-                //Need to somehow figure out how to pop or push a vid into the users like or dislike attribute array
-            if(PrevInteract === false)
-            {
-                const query = {
-                text: 'UPDATE Videos SET Videos.Likes = Videos.Likes + 1 WHERE Videos.vid = vid VALUES($1)',
-                values: [vid]
-                }
-                const result = await client.query(query);
-                console.log(result);
-            }
-        }
-        else
-        {
-
-        }
-    } catch (err) {
-        console.error(err);
-    }
-};
-
-//Below version is for if we keep track of users likes/dislikes onto the video itself, so video will have more attributes
-
-/*export const LikeOrDislikeV2 = async (vid: number, LikeVote: boolean,uid: number, likedby: number[], dislikedby: number[]): Promise<void> => {
-    try {
-        let PrevInteract: Boolean = false;
-        //If the user DID like the video, so LikeVote is equal to true
-        if(LikeVote)
-        {
-            //Check if the video has been liked the the current user
-            likedby.forEach(
-                //If this if statement has true, then video has been previously liked by the user
-                element => if(element===uid)
-                {
-                    UPDATE Customers
-                    SET ContactName = 'Alfred Schmidt', City= 'Frankfurt'
-                    WHERE CustomerID = 1;
-                    PrevInteract = true;
-                    const query = {
-                    text: 'UPDATE Videos SET Videos.Likes = Videos.Likes - 1 WHERE Videos.vid = vid VALUES($1)',
-                    values: [vid]
-                    }
-                    const result = await client.query(query);
-                    console.log(result);
-                }
-                )
-            //If the previous forEach did not find a uid that belonged to the current user, check if the current user's uid is in the dislike attribute
-            dislikedby.forEach(
-                //If this if statement has true, then video has been previously disliked by the user
-                element => if(element===uid)
-                {
-                    PrevInteract = true;
-                    const query = {
-                    text: 'UPDATE Videos SET Videos.Dislikes = Videos.Dislikes - 1, Videos.Likes = Videos.Likes + 1 WHERE Videos.vid = vid VALUES($1)',
-                    values: [vid]
-                    }
-                    const result = await client.query(query);
-                    console.log(result);
-                }
-                )
-                //User has not interacted with video at all
-                //Need to somehow push uid into the likedBy attribute, if this is chosen
-            if(PrevInteract === false)
-            {
-                const query = {
-                text: 'UPDATE Videos SET Videos.Likes = Videos.Likes + 1 WHERE Videos.vid = vid VALUES($1)',
-                values: [vid]
-                }
-                const result = await client.query(query);
-                console.log(result);
-            }
-        }
-        else
-        {
-
-        }
-    } catch (err) {
-        console.error(err);
-    }
-};*/
