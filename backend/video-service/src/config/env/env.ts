@@ -5,13 +5,13 @@ const { env } = process;
 
 export const defaults = {
     NODE_ENV: 'development',
-    PORT: '3000',
+    PORT: '3001',
     ORIGIN: '0.0.0.0',
     PGUSER: 'dbuser',
-    PGHOST: 'database.server.com',
+    PGHOST: 'localhost',
     PGDATABASE: 'mydb',
     PGPASSWORD: 'pass',
-    PGPORT: '3001',
+    PGPORT: '5432',
 } as Readonly<Required<NodeJS.ProcessEnv>>;
 
 export function set(key: keyof NodeJS.ProcessEnv): string {
