@@ -1,4 +1,3 @@
-import bcrypt from 'bcrypt';
 import { client } from './postgresql';
 
 export interface Auth {
@@ -190,8 +189,7 @@ export const filterKeyword = async (keyword: string, genres: Genres): Promise<an
         genres.documentary
       ]
     };
-    const result = await client.query(query);
-    const { rows } = result;
+    const { rows } = await client.query(query);
     const vids: Set<string> = new Set();
     rows.forEach((video) => {
       vids.add(video.vid);
@@ -206,8 +204,11 @@ export const filterKeyword = async (keyword: string, genres: Genres): Promise<an
 export const countView = async (vid: string) => {
   try {
     const query = {
-      text: 'UPDATE videos'
+      text: 'UPDATE videos SET views = views + 1 WHERE vid = $1 RETURNING views',
+      values: [vid]
     }
+    const { rows } = await client.query(query);
+    return rows[0];
   } catch (err) {
 
   }
