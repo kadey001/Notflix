@@ -1,0 +1,15 @@
+.add-comment {
+  display: flex;
+  flex: 1;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  width: 100%;
+  resize: none;
+}
+.send-buttons {
+  display: flex;
+  justify-content: flex-end;
+}
+.send-button-enabled {
+  background-color: #e50914;
+}

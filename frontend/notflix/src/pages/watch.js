@@ -4,6 +4,7 @@ import PlayerHeader from "../components/playerHeader/playerHeader";
 import { Global, css } from "@emotion/react";
 import Player from "../components/player/player";
 import HeaderJumbotron from "../components/headerJumbotron/headerJumbotron";
+import AddComment from "../containers/comments/addComment/addComment";
 
 export default function VideoPlayer() {
   return (
@@ -11,6 +12,7 @@ export default function VideoPlayer() {
       <Global styles={GlobalCSS} />
       <PlayerHeader />
       <Player />
+      <AddComment />
     </>
   );
 }

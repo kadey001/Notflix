@@ -7,7 +7,7 @@ import { useHistory } from "react-router-dom";
 async function signup(userData) {
   const config = {
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
   };
   return axios.post(
@@ -15,7 +15,7 @@ async function signup(userData) {
     {
       username: userData.username,
       email: userData.email,
-      password: userData.password
+      password: userData.password,
     },
     config
   );
@@ -36,14 +36,16 @@ export default function Signup() {
 
   const handleSignUp = (event) => {
     event.preventDefault();
-    signup(userData).then((result) => {
-      console.log(result);
-      // Result contains the uid for the new user
-      // history.push(``)
-    }).catch((err) => {
-      console.error(err);
-      setError(err.response.statusText);
-    });
+    signup(userData)
+      .then((result) => {
+        console.log(result);
+        // Result contains the uid for the new user
+        // history.push(``)
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(err.response.statusText);
+      });
 
     console.log(userData);
   };
@@ -56,7 +58,7 @@ export default function Signup() {
 
         <Form.Base onSubmit={handleSignUp} method="POST">
           <Form.Input
-            placeholder="User name"
+            placeholder="Username"
             value={userData.userName}
             onChange={({ target }) =>
               setUserData({ ...userData, username: target.value })
