@@ -65,7 +65,7 @@ export const addPerson = async (name: string, email: string, password: string, p
 export const signUp = async (auth: Auth) => {
   try {
     const query = {
-      text: 'INSERT INTO users(username, email, password, token, created, plantype) VALUES($1, $2, $3, $4, $5, $6)',
+      text: 'INSERT INTO users(username, email, password, token, created, plantype) VALUES($1, $2, $3, $4, $5, $6) RETURNING uid',
       values: [auth.username, auth.email, auth.password, auth.token, new Date(), 0]
     }
     const result = await client.query(query);
@@ -78,7 +78,7 @@ export const signUp = async (auth: Auth) => {
 export const signIn = async (auth: Auth) => {
   try {
     const query = {
-      text: 'SELECT username, password, token FROM users WHERE email = $1 RETURNING',
+      text: 'SELECT username, password, token FROM users WHERE email = $1 RETURNING uid',
       values: [auth.email]
     }
     const { rows } = await client.query(query);
@@ -107,7 +107,8 @@ export const updateUserToken = async (token: string, uid: string) => {
 export const filterGenre = async (genres: Genres): Promise<any> => {
   try {
     const query = {
-      text: 'SELECT title FROM videos WHERE vid IN (SELECT vid FROM Genres WHERE comedy = $1 AND horror = $2 AND action = $3);',
+      text: `SELECT vid FROM videos WHERE vid IN 
+        (SELECT vid FROM Genres WHERE comedy = $1 AND horror = $2 AND action = $3 AND drama = $4 AND fantasy = $5 AND documentary = $6);`,
       values: [genres.comedy,
       genres.horror,
       genres.action,
@@ -117,7 +118,11 @@ export const filterGenre = async (genres: Genres): Promise<any> => {
       ]
     };
     const { rows } = await client.query(query);
-    return rows;
+    const vids: Set<string> = new Set();
+    rows.forEach((video) => {
+      vids.add(video.vid);
+    });
+    return vids;
   } catch (err) {
     console.error(err);
   }
@@ -192,6 +197,7 @@ export const filterKeyword = async (keyword: string, genres: Genres): Promise<an
     const { rows } = await client.query(query);
     const vids: Set<string> = new Set();
     rows.forEach((video) => {
+      console.log(video);
       vids.add(video.vid);
     });
     console.log(vids);

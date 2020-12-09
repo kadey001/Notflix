@@ -200,15 +200,19 @@ router.get('/filter-genre', async (req, res, next) => {
         const genres = req.body as Genres;
         parseGenres(genres);
         const vids: Set<any> = await filterGenre(genres);
+        if (!vids) {
+            res.status(400).send('Invalid Response');
+            return;
+        }
         // Create thumbnail link for each vid from list of vids in response
-        const response = [];
+        const response: Array<{ vid: string, img: string }> = [];
         vids.forEach((vid) => {
             response.push({
                 vid,
                 img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`
             })
         });
-        res.status(200).send();
+        res.status(200).send(JSON.stringify(response));
     } catch (err) {
         console.error(err);
         next(err);
