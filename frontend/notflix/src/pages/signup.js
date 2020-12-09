@@ -2,27 +2,41 @@ import React, { useState } from "react";
 import { HeaderContainer } from "../containers/header";
 import { Form } from "../components";
 import * as ROUTES from "../constants/routes";
+import axios from "axios";
 import { useHistory } from "react-router-dom";
 
 export default function Signup() {
   const history = useHistory();
   const [userData, setUserData] = useState({
-    firstName: "",
-    lastName: "",
+    userName: "",
     emailAddress: "",
     password: "",
   });
   const [error, setError] = useState("");
   const isInvalid =
-    userData.firstName === "" ||
-    userData.lastName === "" ||
+    userData.userName === "" ||
     userData.password === "" ||
     userData.emailAddress === "";
 
   const handleSignUp = (event) => {
     event.preventDefault();
-    //handle signup request here
+
     const options = {};
+    const formData = new FormData();
+    formData.append("username", userData.userName);
+    formData.append("email", userData.email);
+    formData.append("password", userData.password);
+
+    const config: AxiosRequestConfig = {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    };
+    return axios.post(
+      "http://13.77.174.221:3001/auth/sign-up",
+      formData,
+      config
+    );
     console.log(userData);
   };
 
@@ -34,17 +48,10 @@ export default function Signup() {
 
         <Form.Base onSubmit={handleSignUp} method="POST">
           <Form.Input
-            placeholder="First name"
-            value={userData.firstName}
+            placeholder="User name"
+            value={userData.userName}
             onChange={({ target }) =>
-              setUserData({ ...userData, firstName: target.value })
-            }
-          />
-          <Form.Input
-            placeholder="Last name"
-            value={userData.lastName}
-            onChange={({ target }) =>
-              setUserData({ ...userData, lastName: target.value })
+              setUserData({ ...userData, userName: target.value })
             }
           />
           <Form.Input

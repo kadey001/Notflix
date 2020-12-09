@@ -1,11 +1,12 @@
 /** @jsx jsx */
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 //import { css } from "@emotion/core";
 import { css, jsx } from "@emotion/react";
 import styled from "@emotion/styled";
 import Icon from "../../components/Icon/Icon";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useHistory, useParams, Link } from "react-router-dom";
+import axios from "axios";
 
 import one from "../../img/one.jpg";
 import two from "../../img/two.jpg";
@@ -19,7 +20,8 @@ const content = [one, two, three, four, five, six];
 const MovieRows = ({ category, setActive }) => {
   const [hovered, setHovered] = useState(false);
   const history = useHistory();
-  const [vid, setVid] = useState(1);
+  const [vid, setVid] = useState();
+  const [movies, setMovies] = useState([]);
 
   const handleHover = useCallback((e) => {
     e.type === "mouseenter"
