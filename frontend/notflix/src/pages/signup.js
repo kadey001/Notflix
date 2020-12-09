@@ -38,9 +38,11 @@ export default function Signup() {
     event.preventDefault();
     signup(userData).then((result) => {
       console.log(result);
+      // Result contains the uid for the new user
+      // history.push(``)
     }).catch((err) => {
       console.error(err);
-      setError(err.message);
+      setError(err.response.statusText);
     });
 
     console.log(userData);
