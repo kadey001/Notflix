@@ -1,42 +1,48 @@
 import React, { useState } from "react";
 import { HeaderContainer } from "../containers/header";
 import { Form } from "../components";
-import * as ROUTES from "../constants/routes";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
+
+async function signup(userData) {
+  const config = {
+    headers: {
+      "Content-Type": "application/json"
+    },
+  };
+  return axios.post(
+    "http://13.77.174.221:3001/auth/sign-up",
+    {
+      username: userData.username,
+      email: userData.email,
+      password: userData.password
+    },
+    config
+  );
+}
 
 export default function Signup() {
   const history = useHistory();
   const [userData, setUserData] = useState({
-    userName: "",
-    emailAddress: "",
+    username: "",
+    email: "",
     password: "",
   });
   const [error, setError] = useState("");
   const isInvalid =
-    userData.userName === "" ||
+    userData.username === "" ||
     userData.password === "" ||
-    userData.emailAddress === "";
+    userData.email === "";
 
   const handleSignUp = (event) => {
     event.preventDefault();
+    signup(userData).then((result) => {
+      console.log(result);
+    }).catch((err) => {
+      console.error(err);
+      setError(err.message);
+    });
 
-    const options = {};
-    const formData = new FormData();
-    formData.append("username", userData.userName);
-    formData.append("email", userData.email);
-    formData.append("password", userData.password);
-
-    const config: AxiosRequestConfig = {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-    };
-    return axios.post(
-      "http://13.77.174.221:3001/auth/sign-up",
-      formData,
-      config
-    );
     console.log(userData);
   };
 
@@ -51,14 +57,14 @@ export default function Signup() {
             placeholder="User name"
             value={userData.userName}
             onChange={({ target }) =>
-              setUserData({ ...userData, userName: target.value })
+              setUserData({ ...userData, username: target.value })
             }
           />
           <Form.Input
             placeholder="Email address"
             value={userData.emailAddress}
             onChange={({ target }) =>
-              setUserData({ ...userData, emailAddress: target.value })
+              setUserData({ ...userData, email: target.value })
             }
           />
           <Form.Input
