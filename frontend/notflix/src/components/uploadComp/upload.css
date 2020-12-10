@@ -1,16 +1,16 @@
 .filepond--root,
 .filepond--root .filepond--drop-label {
   height: 100px;
-  width: 500px;
+  width: 300px;
 
-  color: black;
+  color: white;
 }
 .filepond--root {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
     Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
 .filepond--root .filepond--panel-root {
-  background-color: red;
+  background-color: #e50914;
 }
 .filepond--item {
   width: calc(50% - 0.5em);

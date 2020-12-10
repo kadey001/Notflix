@@ -9,6 +9,7 @@ import {
   Link,
   Input,
   Submit,
+  Dropdown,
 } from "./styles/form";
 
 export default function Form({ children, ...restProps }) {
@@ -40,4 +41,7 @@ Form.Input = function FormInput({ children, ...restProps }) {
 };
 Form.Submit = function FormSubmit({ children, ...restProps }) {
   return <Submit {...restProps}>{children}</Submit>;
+};
+Form.Dropdown = function FormDropdown({ children, ...restProps }) {
+  return <Dropdown {...restProps}>{children}</Dropdown>;
 };
