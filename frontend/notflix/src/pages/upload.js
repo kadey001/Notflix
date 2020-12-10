@@ -9,56 +9,83 @@ import PlayerHeader from "../components/playerHeader/playerHeader";
 import UploadComp from "../components/uploadComp/uploadComp";
 import { Form } from "../components";
 import Select from "react-select";
+import makeAnimated from "react-select/animated";
+
+const animatedComponents = makeAnimated();
 
 export default function Upload() {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [length, setLength] = useState("");
-  const [releaseDate, setReleaseDate] = useState("");
   const [genre, setGenre] = useState("");
-  const [selectedOption, setSelectedOption] = useState("none");
+  const [selectedOption, setSelectedOption] = useState([]);
+
+  const [uploadData, setUploadData] = useState({
+    title: "",
+    description: "",
+    length: "",
+    released: "",
+    comedy: false,
+    horror: false,
+    action: false,
+    drama: false,
+    fantasy: false,
+  });
 
   console.log(genre);
   console.log(selectedOption);
+  console.log(uploadData);
 
   const [error, setError] = useState("");
 
   const isInvalid =
-    title === "" ||
-    description === "" ||
-    length === "" ||
-    releaseDate === "" ||
-    genre === "";
+    uploadData.title === "" ||
+    uploadData.description === "" ||
+    uploadData.length === "" ||
+    uploadData.released === "";
   const handleUpload = (event) => {
     event.preventDefault();
     //Handle sign in request here
   };
-  const handleTypeSelect = (e) => {
-    setSelectedOption(e.lablel);
+  const handleChange = (selectedOption) => {
+    setSelectedOption({ selectedOption });
+    if (selectedOption == "comedy") {
+      setUploadData({ comedy: true });
+      console.log(uploadData.comedy);
+    }
   };
-  const options = [
-    {
-      label: "Comedy",
-      value: "comedy",
-    },
-    {
-      label: "Horror",
-      value: "horror",
-    },
-    {
-      label: "Action",
-      value: "action",
-    },
-    {
-      label: "Drama",
-      value: "drama",
-    },
-    {
-      label: "Fantasy",
-      value: "fantasy",
-    },
-  ];
 
+  const onChangeComedy = () => {
+    setUploadData((initialState) => ({
+      ...uploadData,
+      comedy: !initialState.comedy,
+    }));
+  };
+
+  const onChangeHorror = () => {
+    setUploadData((initialState) => ({
+      ...uploadData,
+      horror: !initialState.horror,
+    }));
+  };
+
+  const onChangeAction = () => {
+    setUploadData((initialState) => ({
+      ...uploadData,
+      action: !initialState.action,
+    }));
+  };
+
+  const onChangeDrama = () => {
+    setUploadData((initialState) => ({
+      ...uploadData,
+      drama: !initialState.drama,
+    }));
+  };
+
+  const onChangeFantasy = () => {
+    setUploadData((initialState) => ({
+      ...uploadData,
+      fantasy: !initialState.fantasy,
+    }));
+  };
   return (
     <>
       <Global styles={GlobalCSS} />
@@ -71,37 +98,84 @@ export default function Upload() {
         <Form.Base onSubmit={handleUpload} method="POST">
           <Form.Input
             placeholder="Title"
-            value={title}
-            onChange={({ target }) => setTitle(target.value)}
+            value={uploadData.title}
+            onChange={({ target }) =>
+              setUploadData({ ...uploadData, title: target.value })
+            }
           />
           <Form.Input
             placeholder="Description"
-            value={description}
-            onChange={({ target }) => setDescription(target.value)}
+            value={uploadData.description}
+            onChange={({ target }) =>
+              setUploadData({ ...uploadData, description: target.value })
+            }
           />
           <Form.Input
             placeholder="Length"
-            value={length}
-            onChange={({ target }) => setLength(target.value)}
+            value={uploadData.length}
+            onChange={({ target }) =>
+              setUploadData({ ...uploadData, length: target.value })
+            }
           />
           <Form.Input
             placeholder="Release Date"
-            value={releaseDate}
-            onChange={({ target }) => setReleaseDate(target.value)}
+            value={uploadData.releaseDate}
+            onChange={({ target }) =>
+              setUploadData({ ...uploadData, released: target.value })
+            }
           />
-
-          <Select
-            styles={colourStyles}
-            selection
-            options={options}
-            onChange={(e) => {
-              setGenre({ genre: e.value });
-              setSelectedOption({ selectedOption: e.label });
+          <div
+            style={{
+              display: "inline-block",
+              width: 314,
+              backgroundColor: "#333",
+              borderRadius: 4,
+              height: 50,
+              justifyContent: "center",
             }}
-            value={() => this.value}
-            placeholder="Genre"
-            autosize={true}
-          />
+          >
+            <label className="label">
+              <input
+                className="check-box"
+                type="checkbox"
+                onChange={onChangeComedy}
+              />
+              Comedy
+            </label>
+            <label className="label">
+              <input
+                className="check-box"
+                type="checkbox"
+                onChange={onChangeHorror}
+              />
+              Horror
+            </label>
+            <label className="label">
+              <input
+                className="check-box"
+                type="checkbox"
+                onChange={onChangeAction}
+              />
+              Action
+            </label>
+            <label className="label">
+              <input
+                className="check-box"
+                type="checkbox"
+                onChange={onChangeDrama}
+              />
+              Drama
+            </label>
+            <label className="label">
+              <input
+                className="check-box"
+                type="checkbox"
+                onChange={onChangeFantasy}
+              />
+              Fantasy
+            </label>
+          </div>
+
           <Form.Submit disabled={isInvalid} type="submit">
             Upload
           </Form.Submit>
@@ -144,25 +218,7 @@ const colourStyles = {
     padding: 0,
   }),
 };
-const UploadCSS = css`
-  .filepond--root .filepond--drop-label {
-    height: 200px;
-  }
-  .filepond--item {
-    width: calc(50% - 0.5em);
-  }
-  @media (min-width: 30em) {
-    .filepond--item {
-      width: calc(50% - 0.5em);
-    }
-  }
 
-  @media (min-width: 50em) {
-    .filepond--item {
-      width: calc(33.33% - 0.5em);
-    }
-  }
-`;
 const GlobalCSS = css`
   * {
     box-sizing: border-box;
@@ -208,5 +264,21 @@ const GlobalCSS = css`
     font-size: 18.5px;
     cursor: pointer;
     color: white;
+  }
+  .check-box {
+    margin-right: 5px;
+    margin-left: 8px;
+    display: block;
+    float: left;
+    white-space: nowrap;
+    vertical-align: middle;
+    margin-top: 1px;
+  }
+  .label {
+    display: inline-block;
+    width: 6em;
+    margin-right: 0.5em;
+    padding-top: 0.3em;
+    color: #a9a9a9;
   }
 `;
