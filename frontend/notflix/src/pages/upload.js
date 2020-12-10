@@ -8,20 +8,19 @@ import { Global, css } from "@emotion/react";
 import PlayerHeader from "../components/playerHeader/playerHeader";
 import UploadComp from "../components/uploadComp/uploadComp";
 import { Form } from "../components";
-import Select from "react-select";
-import makeAnimated from "react-select/animated";
-
-const animatedComponents = makeAnimated();
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function Upload() {
   const [genre, setGenre] = useState("");
   const [selectedOption, setSelectedOption] = useState([]);
+  const [startDate, setStartDate] = useState("");
 
   const [uploadData, setUploadData] = useState({
     title: "",
     description: "",
     length: "",
-    released: "",
+    released: null,
     comedy: false,
     horror: false,
     action: false,
@@ -30,7 +29,7 @@ export default function Upload() {
   });
 
   console.log(genre);
-  console.log(selectedOption);
+  console.log(startDate);
   console.log(uploadData);
 
   const [error, setError] = useState("");
@@ -40,10 +39,12 @@ export default function Upload() {
     uploadData.description === "" ||
     uploadData.length === "" ||
     uploadData.released === "";
+
   const handleUpload = (event) => {
     event.preventDefault();
     //Handle sign in request here
   };
+
   const handleChange = (selectedOption) => {
     setSelectedOption({ selectedOption });
     if (selectedOption == "comedy") {
@@ -86,6 +87,9 @@ export default function Upload() {
       fantasy: !initialState.fantasy,
     }));
   };
+  const handleDateChange = (date) => {
+    setStartDate(date);
+  };
   return (
     <>
       <Global styles={GlobalCSS} />
@@ -111,19 +115,34 @@ export default function Upload() {
             }
           />
           <Form.Input
+            type="number"
             placeholder="Length"
             value={uploadData.length}
             onChange={({ target }) =>
               setUploadData({ ...uploadData, length: target.value })
             }
           />
-          <Form.Input
+          {/* <Form.Input
             placeholder="Release Date"
             value={uploadData.releaseDate}
             onChange={({ target }) =>
               setUploadData({ ...uploadData, released: target.value })
             }
+          /> */}
+
+          <DatePicker
+            placeholderText="Release Date"
+            selected={startDate}
+            onChange={(date) => {
+              setUploadData({ ...uploadData, released: date });
+              setStartDate(date);
+            }}
+            dropdownMode="select"
+            showMonthDropdown
+            showYearDropdown
+            adjustDateOnChange
           />
+
           <div
             style={{
               display: "inline-block",
@@ -184,6 +203,7 @@ export default function Upload() {
     </>
   );
 }
+
 const colourStyles = {
   placeholder: (defaultStyles) => ({
     ...defaultStyles,
@@ -280,5 +300,19 @@ const GlobalCSS = css`
     margin-right: 0.5em;
     padding-top: 0.3em;
     color: #a9a9a9;
+  }
+  .react-datepicker-wrapper,
+  .react-datepicker__input-container,
+  .react-datepicker__input-container input {
+    display: block;
+    width: 100%;
+    background: #333;
+    border-radius: 4px;
+    border: 0;
+    color: white;
+    height: 50px;
+    line-height: 50px;
+    margin-bottom: 20px;
+    padding-left: 6px;
   }
 `;
