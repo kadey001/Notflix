@@ -23,32 +23,60 @@ export const connectDB = async (): Promise<void> => {
     }
 };
 
-// TODO move to its own query file
-/*export const addPerson = async (name: string): Promise<void> => {
-    try {
-        const query = {
-            text: 'INSERT INTO test(username) VALUES($1)',
-            values: [name]
-        };
-        const result = await client.query(query);
-        console.log(result);
-    } catch (err) {
-        console.error(err);
-    }
-};*/
+export interface Auth {
+    username: string;
+    email: string;
+    password: string;
+    token: string;
+    plan: number;
+  }
+  export interface Genres {
+    comedy: boolean,
+    horror: boolean,
+    action: boolean,
+    drama: boolean,
+    fantasy: boolean,
+    documentary: boolean,
+  };
 
-export const addFilm = async ( length: number, title: string, comedy: boolean, horror: boolean, action: boolean, releaseDate: string): Promise<void> => {
+  export interface MovieInfo extends Genres { 
+      title: string, 
+      description: string, 
+      length: number, 
+      releaseDate: Date 
+    };
+
+  export const addFilm = async (movieInfo: MovieInfo): Promise<void> => {
     try {
-        /*const vidquery = {
-            text: 'SELECT vid FROM video ORDER BY vid DESC;',      
-        };
-        const vidResult = await client.query(vidquery);
-        let filmVid: number = (vidResult.rows[0].vid);
-        filmVid++;
-        console.log("The result is " + filmVid);*/
+      const query = {
+        text: 'INSERT INTO video(filmlength, description, title, released, likes, dislikes, views) VALUES($1, $2, $3, $4, 0, 0, 0) RETURNING vid;',
+        values: [movieInfo.length, movieInfo.description, movieInfo.title.toLowerCase(), movieInfo.releaseDate]
+      };
+      const result = await client.query(query);
+      const vid = result.rows[0].vid;
+      const Genrequery = {
+        text: 'INSERT INTO genres(vid, comedy, horror, action, drama, fantasy, documentary) VALUES($1, $2, $3, $4, $5, $6, $7);',
+        values: [vid,
+          movieInfo.comedy,
+          movieInfo.horror,
+          movieInfo.action,
+          movieInfo.drama,
+          movieInfo.fantasy,
+          movieInfo.documentary
+        ]
+      };
+      const Genreresult = await client.query(Genrequery);
+      console.log('Genre Result is: ' + Genreresult);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+/*export const addFilm = async ( length: number, title: string, comedy: boolean, horror: boolean, action: boolean, releaseDate: string): Promise<void> => {
+    try {
         const query = {
             text: "INSERT INTO video(filmlength, title, likes, dislikes, views, released) VALUES($1, $2, $3, $3, $3, $4);",
-            values: [length,title, 0, releaseDate]
+            values: [length,title.toLowerCase(), 0, releaseDate]
         };
         const result = await client.query(query);
         console.log(result);
@@ -68,9 +96,27 @@ export const addFilm = async ( length: number, title: string, comedy: boolean, h
     }catch(error){
         console.log(error);
     }
+};*/
+
+
+export const addPerson = async (userInfo: Auth): Promise<void> => {      //Let user generate uid? I think we should generate for them
+    try {
+        //Insert relevant user information
+        const query = {
+            text: 'INSERT INTO users(username,email,password,plantype) VALUES($1, $2, $3, $4);',
+            values: [userInfo.username,
+                userInfo.email,
+                userInfo.password,
+                userInfo.plan]
+        };
+        const result = await client.query(query);
+        console.log(result);
+    } catch (err) {
+        console.error(err);
+    }
 };
 
-export const addPerson = async (name: string, email: string, password: string, planType: number): Promise<void> => {      //Let user generate uid? I think we should generate for them
+/*export const addPerson = async (name: string, email: string, password: string, planType: number): Promise<void> => {      //Let user generate uid? I think we should generate for them
     try {
         //Insert relevant user information
         const query = {
@@ -79,34 +125,22 @@ export const addPerson = async (name: string, email: string, password: string, p
         };
         const result = await client.query(query);
         console.log(result);
-        //Grab the uid generated to insert into plan
-        const uidquery = {
-            text: 'SELECT uid FROM users WHERE username = $1 AND password = $2;',
-            values: [name,password]      
-        };
-        const uidResult = await client.query(uidquery);
-        console.log(uidResult);
-        const Planquery = {
-            text: 'INSERT INTO plan SELECT uid, plantype FROM users;',
-        };
-        const planResult = await client.query(Planquery);
-        console.log(planResult);
-        /*const Planquery = {
-            text: 'INSERT INTO plan(type) VALUES($1)',
-            values: [planType]
-        };
-        const Planresult = await client.query(query);
-        console.log(result);*/
     } catch (err) {
         console.error(err);
     }
-};
+};*/
 
-export const filterGenre = async (comedyGenre: boolean, horrorGenre: boolean, actionGenre: boolean): Promise<void> => {
+export const filterGenre = async (GenreInfo: Genres): Promise<void> => {
     try {
         const query = {
-            text: 'SELECT title FROM video WHERE vid IN (SELECT vid FROM Genres WHERE comedy = $1 AND horror = $2 AND action = $3);',
-            values: [comedyGenre,horrorGenre,actionGenre]
+            text: 'SELECT title FROM video WHERE vid IN (SELECT vid FROM Genres WHERE comedy = $1 AND horror = $2 AND action = $3 AND drama = $4 AND fantasy = $5 AND documentary = $6);',
+            values: [GenreInfo.comedy,
+                    GenreInfo.horror,
+                    GenreInfo.action,
+                    GenreInfo.drama,
+                    GenreInfo.fantasy,
+                    GenreInfo.action        
+                    ]
         };
         const result = await client.query(query);
         console.log(result);
@@ -170,11 +204,49 @@ export const filterLikes = async (desiredLikes: number,higherOrLower: boolean): 
     }
 };
 
-export const filterKeyword = async (keyword: string, comedyGenre: boolean, horrorGenre: boolean, actionGenre: boolean): Promise<void> => {
+export const filterKeyword = async (keyword: string, GenreInfo: Genres): Promise<void> => {
     try {
+        //Check if all Genres are false, means user wants to search across all Genres
+        let index = 0;
+        let searchGenre = false;
+        for (const genreType in GenreInfo) {
+            if(GenreInfo[genreType]==true)
+            {
+                searchGenre=true;
+            }
+        }
+        console.log("searchgenre is "+searchGenre);
+        //This is if user wants to search for titles and narrow even further via Genre
+        if(searchGenre==true)
+        {
+            const query = {
+                text: 'SELECT Video.title FROM Video WHERE Video.title LIKE \'%\' || $1 || \'%\' AND vid IN (SELECT vid FROM Genres WHERE comedy = $2 AND horror = $3 AND action = $4 AND drama = $5 AND fantasy = $6 AND documentary = $7)',
+                values: [keyword,GenreInfo.comedy,GenreInfo.horror,GenreInfo.action,GenreInfo.drama,GenreInfo.fantasy,GenreInfo.documentary]
+            };
+            const result = await client.query(query);
+            console.log(result);
+        }
+        //User wants to search for titles across all Genres
+        else
+        {
+            const query = {
+                text: 'SELECT Video.title FROM Video WHERE Video.title LIKE \'%\' || $1 || \'%\'',      
+                values: [keyword]
+            };
+            const result = await client.query(query);
+            console.log(result);
+        }
+    } catch (err) {
+        console.error(err);
+    }
+};
+
+export const topVids = async (desiredVideos: number): Promise<void> => {
+    try {
+        //Could pull more information from videos than just title, just need to modify query
         const query = {
-            text: 'SELECT Video.title FROM Video WHERE Video.title LIKE \'%\' || $1 || \'%\' AND vid IN (SELECT vid FROM Genres WHERE comedy = $2 AND horror = $3 AND action = $4)',      
-            values: [keyword,comedyGenre,horrorGenre,actionGenre]
+            text: 'SELECT title, views FROM video ORDER BY views DESC LIMIT $2;',
+            values: [desiredVideos]
         };
         const result = await client.query(query);
         console.log(result);
@@ -183,44 +255,11 @@ export const filterKeyword = async (keyword: string, comedyGenre: boolean, horro
     }
 };
 
-export const topVids = async (desiredViews: number,desiredVideos: number): Promise<void> => {
+export const incrementView = async ( vid: string ): Promise<void> => {
     try {
         const query = {
-            text: 'SELECT title FROM video WHERE views > $1 ORDER BY views DESC LIMIT $2;',
-            values: [desiredViews,desiredVideos]
-        };
-        const result = await client.query(query);
-        console.log(result);
-    } catch (err) {
-        console.error(err);
-    }
-};
-
-export const getPerson = async (sentEmail: string,sentPassword: string): Promise<void> => {
-    try {
-        const query = {
-            text: 'SELECT * FROM users WHERE email = $1 AND password = $2;',
-            values: [sentEmail,sentPassword]
-        };
-        const result = await client.query(query);
-        console.log(result);
-    } catch (err) {
-        console.error(err);
-    }
-};
-
-export const incrementView = async ( vid: number ): Promise<void> => {
-    try {
-        const vidquery = {
-            text: 'SELECT views FROM video WHERE vid = $1',
-            values: [vid]      
-        };
-        const vidResult = await client.query(vidquery);
-        let viewCount: number = (vidResult.rows[0].views);
-        viewCount++;
-        const query = {
-            text: 'UPDATE video SET views = $1 WHERE vid = $2 ',
-            values: [viewCount,vid]
+            text: 'UPDATE video SET views = views + 1 WHERE vid = $1 ',
+            values: [vid]
         };
         const result = await client.query(query);
         console.log(result);
@@ -229,20 +268,15 @@ export const incrementView = async ( vid: number ): Promise<void> => {
     }
 };
 
-export const changePlan = async ( name: string, password: string, newPlan: number ): Promise<void> => {
+export const changePlan = async ( userID: string, newPlan: number ): Promise<void> => {
     try {
         const query = {
-            text: 'UPDATE users SET plantype = $3 WHERE username = $1 AND password = $2;',
-            values: [name,password,newPlan]
+            //text: 'UPDATE users SET plantype = $1;',
+            text: 'UPDATE users SET plantype = $1 WHERE CAST( uid AS TEXT)= $2;',
+            values: [newPlan,userID]
         };
         const result = await client.query(query);
         console.log(result);
-        const planquery = {
-            text: 'UPDATE plan SET plantype = $3 WHERE uid IN (SELECT users.uid FROM users WHERE username = $1 AND password = $2);',
-            values: [name,password,newPlan]
-        };
-        const planresult = await client.query(planquery);
-        console.log(planresult);
     }catch(error){
         console.log(error);
     }
