@@ -1,6 +1,14 @@
 import React from "react";
 import { BrowserRouter as Router, Route } from "react-router-dom";
-import { Home, Browse, Signin, Signup, Watch, Upload } from "./pages";
+import {
+  Home,
+  Browse,
+  Signin,
+  Signup,
+  Watch,
+  Upload,
+  Subscriptions,
+} from "./pages";
 import * as ROUTES from "./constants/routes";
 
 export default function App() {
@@ -21,8 +29,11 @@ export default function App() {
       <Route exact path="/watch/:vid">
         <Watch />
       </Route>
-      <Route exact path="/upload/">
+      <Route exact path="/upload">
         <Upload />
+      </Route>
+      <Route exact path="/subscriptions">
+        <Subscriptions />
       </Route>
     </Router>
   );
