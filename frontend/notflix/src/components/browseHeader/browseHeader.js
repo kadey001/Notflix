@@ -3,7 +3,7 @@ import React, { useState, useEffect, forwardRef } from "react";
 import { css, jsx } from "@emotion/react";
 import Icon from "../../components/Icon/Icon";
 
-const leftLinks = ["Upload", "My Library", "Subscriptions"];
+const leftLinks = ["Upload", "Subscriptions"];
 
 const BrowseHeader = forwardRef((props, ref) => {
   const [scrolled, setScrolled] = useState(false);
@@ -53,11 +53,7 @@ const BrowseHeader = forwardRef((props, ref) => {
             <p> Upload </p>
           </a>
         </li>
-        <li>
-          <a href="/library">
-            <p> My Library </p>
-          </a>
-        </li>
+
         <li>
           <a href="/subscriptions">
             <p> Subscriptions </p>
