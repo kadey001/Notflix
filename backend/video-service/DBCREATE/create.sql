@@ -37,10 +37,3 @@ CREATE TABLE genres (
     PRIMARY KEY(vid),
     FOREIGN KEY(vid) REFERENCES video(vid)
 );
-
-CREATE TABLE plan (
-    uid uuid NOT NULL,
-    planType INTEGER NOT NULL,
-    PRIMARY KEY(uid),
-    FOREIGN KEY(uid) REFERENCES users(uid)
-);
