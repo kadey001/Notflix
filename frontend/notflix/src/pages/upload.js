@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import Rows from "../components/movieRows/movieRows";
 import Footer from "../components/footer/footer";
 import CardDetails from "../components/cardDetails/cardDetails";
@@ -6,7 +6,6 @@ import BrowseHeader from "../components/browseHeader/browseHeader";
 import HeaderJumbotron from "../components/headerJumbotron/headerJumbotron";
 import { Global, css } from "@emotion/react";
 import PlayerHeader from "../components/playerHeader/playerHeader";
-import UploadComp from "../components/uploadComp/uploadComp";
 import { Form } from "../components";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -15,6 +14,7 @@ export default function Upload() {
   const [genre, setGenre] = useState("");
   const [selectedOption, setSelectedOption] = useState([]);
   const [startDate, setStartDate] = useState("");
+  const [files, setFiles] = useState([]);
 
   const [uploadData, setUploadData] = useState({
     title: "",
@@ -95,7 +95,22 @@ export default function Upload() {
       <Global styles={GlobalCSS} />
       <PlayerHeader />
       <HeaderJumbotron />
-      <UploadComp />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          paddingTop: "100px",
+        }}
+      >
+        <Fragment>
+          <form>
+            <div class="upload-btn-wrapper">
+              <button class="btn">Choose a file</button>
+              <input type="file" name="myfile" />
+            </div>
+          </form>
+        </Fragment>
+      </div>
       <Form>
         {error && <Form.Error>{error}</Form.Error>}
 
@@ -122,13 +137,6 @@ export default function Upload() {
               setUploadData({ ...uploadData, length: target.value })
             }
           />
-          {/* <Form.Input
-            placeholder="Release Date"
-            value={uploadData.releaseDate}
-            onChange={({ target }) =>
-              setUploadData({ ...uploadData, released: target.value })
-            }
-          /> */}
 
           <DatePicker
             placeholderText="Release Date"
@@ -314,5 +322,29 @@ const GlobalCSS = css`
     line-height: 50px;
     margin-bottom: 20px;
     padding-left: 6px;
+  }
+  .upload-btn-wrapper {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+  }
+
+  .btn {
+    border: 2px solid #e50914;
+    color: rgb(255, 255, 255);
+    background-color: #e50914;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 20px;
+    font-weight: bold;
+    width: 100%;
+  }
+
+  .upload-btn-wrapper input[type="file"] {
+    font-size: 100px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
   }
 `;
