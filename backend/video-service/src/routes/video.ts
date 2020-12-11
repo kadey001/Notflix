@@ -1,7 +1,7 @@
 import express from 'express';
 import { release } from 'os';
 
-import { addFilm, filterGenre, filterviews, filterLikes, filterKeyword, topVids, incrementView } from '../db/postgresql';
+import { addFilm, filterGenre, filterviews, filterLikes, filterKeyword, topVids, incrementView, Genres, MovieInfo, Auth } from '../db/postgresql';
 
 const router = express.Router();
 
@@ -30,10 +30,47 @@ router.post('/test', (req, res, next) => {
         res.status(200).json({result: "The result is "+name}).send();
 });
 
+const parseGenres = (genres: Genres) => {
+    if (!genres.action)
+        genres.action = false;
+    if (!genres.comedy)
+        genres.comedy = false;
+    if (!genres.drama)
+        genres.drama = false;
+    if (!genres.fantasy)
+        genres.fantasy = false;
+    if (!genres.documentary)
+        genres.documentary = false;
+    if (!genres.horror)
+        genres.horror = false;
+}
 
 //is user making vid or we generate one here and pass it into query?
 router.post('/newfilm', async (req, res, next) => {
     try {
+        // const { title, description, length } = req.body as AddMovieRequest;
+        const movieInfo = req.body as MovieInfo;
+        if (!movieInfo.title || !movieInfo.length) {
+            res.status(400).send('Undefined Movie Info');
+            return;
+        }
+        let { released } = req.body as { released: string };
+        if (released === '') {
+            released = Date.toString();
+        }
+        movieInfo.releaseDate = new Date();
+        parseGenres(movieInfo);
+        console.log(movieInfo);
+        await addFilm(movieInfo);
+        // Maybe get back vid from addFilm call and return so that put webhdfs call can be made on front end (easier with fs)
+        res.status(200).send();
+    } catch (err) {
+        console.error(err);
+        next(err);
+    }
+
+
+        /*
         const { filmTitle } = req.body as { filmTitle: string };
         const { filmLength } = req.body as { filmLength: number };
         const { horrorGenre } = req.body as { horrorGenre: boolean };
@@ -46,19 +83,14 @@ router.post('/newfilm', async (req, res, next) => {
     } catch (err) {
         console.error(err);
         next(err);
-    }
+    }*/
 });
 
 router.get('/filterGenre', async (req, res, next) => {
     try {
-        let horrorQuery = req.query.horrorGenre;
-        let comedyQuery = req.query.comedyGenre;
-        let actionQuery = req.query.actionGenre;
-        let horrorBool: boolean = (horrorQuery === 'true');
-        let comedyBool: boolean = (comedyQuery === 'true');
-        let actionBool: boolean = (actionQuery === 'true');
-        await filterGenre(comedyBool,horrorBool,actionBool);
-        console.log(comedyBool+", "+horrorBool+", "+actionBool);
+        const genreInfo = req.body as Genres;
+        parseGenres(genreInfo);
+        await filterGenre(genreInfo);
         res.status(200).send();
     } catch (err) {
         console.error(err);
@@ -73,12 +105,9 @@ router.get('/filterGenre', async (req, res, next) => {
 
 router.get('/filterViews', async (req, res, next) => {
     try {
-        let desiredViewsQuery = req.query.desiredViews;
-        let higherOrLowerQuery = req.query.higherOrLower;
-        let desiredViewsInt: number = parseInt(desiredViewsQuery!);
-        let higherOrLowerBool: boolean = (higherOrLowerQuery === 'true');
-        await filterviews(desiredViewsInt,higherOrLowerBool);
-        console.log(desiredViewsInt+", "+higherOrLowerBool);
+        let desiredViewsQuery = req.body.desiredViews;
+        let higherOrLowerQuery = req.body.higherOrLower;
+        await filterviews(desiredViewsQuery,higherOrLowerQuery);
         res.status(200).send();
     } catch (err) {
         console.error(err);
@@ -88,30 +117,23 @@ router.get('/filterViews', async (req, res, next) => {
 
 router.get('/filterLikes', async (req, res, next) => {
     try {
-        let desiredLikesQuery = req.query.desiredLikes;
-        let higherOrLowerQuery = req.query.higherOrLower;
-        let desiredLikesInt: number = parseInt(desiredLikesQuery!);
-        let higherOrLowerBool: boolean = (higherOrLowerQuery === 'true');
-        await filterLikes(desiredLikesInt,higherOrLowerBool);
-        console.log(desiredLikesInt+", "+higherOrLowerBool);
+        let desiredLikesQuery = req.body.desiredLikes;
+        let higherOrLowerQuery = req.body.higherOrLower;
+        await filterLikes(desiredLikesQuery,higherOrLowerQuery);
         res.status(200).send();
     } catch (err) {
         console.error(err);
         next(err);
     }
 });
-
+//
 router.get('/search', async (req, res, next) => {
     try {
-        let desiredFilmTitle = req.query.filmTitle;
-        let horrorQuery = req.query.horrorGenre;
-        let comedyQuery = req.query.comedyGenre;
-        let actionQuery = req.query.actionGenre;
-        let horrorBool: boolean = (horrorQuery === 'true');
-        let comedyBool: boolean = (comedyQuery === 'true');
-        let actionBool: boolean = (actionQuery === 'true');
-        let FilmString: string = desiredFilmTitle!;
-        await filterKeyword(FilmString,comedyBool,horrorBool,actionBool);
+        let desiredFilmTitle = req.body.filmTitle.toLowerCase();
+        const genreInfo = req.body as Genres;
+        delete genreInfo.filmTitle;
+        parseGenres(genreInfo);
+        await filterKeyword(desiredFilmTitle,genreInfo);
         console.log();
         res.status(200).send();
     } catch (err) {
@@ -122,11 +144,9 @@ router.get('/search', async (req, res, next) => {
 
 router.get('/topVideos', async (req, res, next) => {
     try {
-        let desiredViewsQuery = req.query.desiredViews;
-        let desiredVideosQuery = req.query.desiredVideos
-        let desiredViewsInt: number = parseInt(desiredViewsQuery!);
-        let desiredVideosInt: number = parseInt(desiredVideosQuery!);
-        await topVids(desiredViewsInt,desiredVideosInt);
+        //let desiredViewsQuery = req.body.desiredViews
+        let desiredVideosQuery = req.body.desiredVideos
+        await topVids(desiredVideosQuery);
         res.status(200).send();
     } catch (err) {
         console.error(err);
@@ -137,8 +157,7 @@ router.get('/topVideos', async (req, res, next) => {
 //Need to figure out how to make this compatible with uuid
 router.post('/watchVid', async (req, res, next) => {
     try {
-        let videoID = parseInt(req.query.vid!);
-        //let videoID: number = videoIDQuery;
+        let videoID = req.body.vid;
         await incrementView(videoID);
         res.status(200).send();
     } catch (err) {
