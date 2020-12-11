@@ -41,7 +41,7 @@ export default function Upload() {
     uploadData.title === "" ||
     uploadData.description === "" ||
     uploadData.length === "" ||
-    uploadData.released === "";
+    uploadData.released === null;
 
   const handleUpload = (event) => {
     event.preventDefault();
