@@ -14,7 +14,8 @@ export default function Upload() {
   const [genre, setGenre] = useState("");
   const [selectedOption, setSelectedOption] = useState([]);
   const [startDate, setStartDate] = useState("");
-  const [files, setFiles] = useState([]);
+  const [file, setFile] = useState([]);
+  const [fileName, setFileName] = useState("Choose a file");
 
   const [uploadData, setUploadData] = useState({
     title: "",
@@ -31,6 +32,8 @@ export default function Upload() {
   console.log(genre);
   console.log(startDate);
   console.log(uploadData);
+  console.log(file);
+  console.log(fileName);
 
   const [error, setError] = useState("");
 
@@ -42,7 +45,7 @@ export default function Upload() {
 
   const handleUpload = (event) => {
     event.preventDefault();
-    //Handle sign in request here
+    const formData = new FormData();
   };
 
   const handleChange = (selectedOption) => {
@@ -90,31 +93,24 @@ export default function Upload() {
   const handleDateChange = (date) => {
     setStartDate(date);
   };
+  const onChange = (e) => {
+    setFile(e.target.files[0]);
+    setFileName(e.target.files[0].name);
+  };
   return (
     <>
       <Global styles={GlobalCSS} />
       <PlayerHeader />
       <HeaderJumbotron />
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          paddingTop: "100px",
-        }}
-      >
-        <Fragment>
-          <form>
-            <div class="upload-btn-wrapper">
-              <button class="btn">Choose a file</button>
-              <input type="file" name="myfile" />
-            </div>
-          </form>
-        </Fragment>
-      </div>
+
       <Form>
         {error && <Form.Error>{error}</Form.Error>}
 
         <Form.Base onSubmit={handleUpload} method="POST">
+          <div className="upload-btn-wrapper">
+            <button className="btn">{fileName}</button>
+            <input type="file" name="myfile" onChange={onChange} />
+          </div>
           <Form.Input
             placeholder="Title"
             value={uploadData.title}
@@ -327,6 +323,7 @@ const GlobalCSS = css`
     position: relative;
     overflow: hidden;
     display: inline-block;
+    padding-bottom: 20px;
   }
 
   .btn {
