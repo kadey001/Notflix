@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "title": "Stream shows and movies from anywhere.",
+    "subTitle": "",
+    "image": "/images/misc/computer.jpg",
+    "direction": "row"
+  },
+  {
+    "id": 2,
+    "title": "Upload shows and movies.",
+    "subTitle": "",
+    "image": "/images/misc/tv.png",
+    "direction": "row-reverse"
+  },
+  {
+    "id": 3,
+    "title": "Your favorite genres.",
+    "subTitle": "",
+    "image": "/images/misc/shrek.png",
+    "direction": "row"
+  }
+]
