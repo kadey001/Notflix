@@ -216,8 +216,20 @@ router.post('/add-movie', async (req, res, next) => {
         // @ts-ignore
         const thumbnailFile = files['thumbnail'][0];
         const movieInfo = req.body as MovieInfo;
-        if (!movieInfo.title || !movieInfo.length || !movieInfo.releaseDate) {
-            res.status(400).send('Undefined Movie Info');
+        console.log(movieInfo);
+        if (!movieInfo.title || !movieInfo.length || !movieInfo.released) {
+            res.statusMessage = 'Undefined Movie Info';
+            if (videoFile) {
+                fs.unlink(videoFile.path, (err) => {
+                    if (err) console.error(err);
+                });
+            }
+            if (thumbnailFile) {
+                fs.unlink(thumbnailFile.path, (err) => {
+                    if (err) console.error(err);
+                });
+            }
+            res.status(400).send();
             return;
         }
         parseGenres(movieInfo);

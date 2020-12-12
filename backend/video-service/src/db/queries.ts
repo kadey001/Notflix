@@ -21,14 +21,14 @@ export interface MovieInfo extends Genres {
   title: string,
   description: string,
   length: string, // In minutes
-  releaseDate: string
+  released: string
 };
 
 export const addFilm = async (movieInfo: MovieInfo): Promise<string | undefined> => {
   try {
     const query = {
       text: 'INSERT INTO videos(filmlength, description, title, released, likes, dislikes, views) VALUES($1, $2, $3, $4, 0, 0, 0) RETURNING vid;',
-      values: [movieInfo.length, movieInfo.description, movieInfo.title.toLowerCase(), new Date(movieInfo.releaseDate)]
+      values: [movieInfo.length, movieInfo.description, movieInfo.title.toLowerCase(), new Date(movieInfo.released)]
     };
     const result = await client.query(query);
     const vid = result.rows[0].vid;
