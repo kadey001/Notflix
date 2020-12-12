@@ -3,7 +3,6 @@ import createError from 'http-errors';
 import config from 'config/app';
 import env from 'config/env';
 import routes from 'routes';
-import cors from 'cors';
 import { errorHandler } from '../lib/errors/index';
 
 function initApp(): Express {
@@ -17,11 +16,6 @@ function initApp(): Express {
         next(createError(404));
     });
     app.use(errorHandler);
-    app.use(
-        cors({
-            origin: 'http://localhost:3001',
-        })
-    );
     return app;
 }
 
