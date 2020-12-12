@@ -20,15 +20,15 @@ export interface Genres {
 export interface MovieInfo extends Genres {
   title: string,
   description: string,
-  length: number,
-  releaseDate: Date
+  length: string, // In minutes
+  releaseDate: string
 };
 
-export const addFilm = async (movieInfo: MovieInfo): Promise<void> => {
+export const addFilm = async (movieInfo: MovieInfo): Promise<string | undefined> => {
   try {
     const query = {
       text: 'INSERT INTO videos(filmlength, description, title, released, likes, dislikes, views) VALUES($1, $2, $3, $4, 0, 0, 0) RETURNING vid;',
-      values: [movieInfo.length, movieInfo.description, movieInfo.title.toLowerCase(), movieInfo.releaseDate]
+      values: [movieInfo.length, movieInfo.description, movieInfo.title.toLowerCase(), new Date(movieInfo.releaseDate)]
     };
     const result = await client.query(query);
     const vid = result.rows[0].vid;
@@ -44,7 +44,8 @@ export const addFilm = async (movieInfo: MovieInfo): Promise<void> => {
       ]
     };
     const Genreresult = await client.query(Genrequery);
-    console.log('Genre Result is: ' + Genreresult);
+    console.log(Genreresult);
+    return vid;
   } catch (error) {
     console.log(error);
   }
@@ -190,6 +191,7 @@ export const filterKeyword = async (keyword: string, GenreInfo: Genres): Promise
     let index = 0;
     let searchGenre = false;
     for (const genreType in GenreInfo) {
+      // @ts-ignore
       if (GenreInfo[genreType] == true) {
         searchGenre = true;
       }

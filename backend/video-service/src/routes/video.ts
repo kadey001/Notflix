@@ -1,7 +1,10 @@
 import express, { NextFunction } from 'express';
+// @ts-ignore
 import WebHDFS from 'webhdfs';
 import http from 'http';
-import request from 'request';
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
 
 import { addFilm, filterGenre, filterViews, filterLikes, filterKeyword, Genres, MovieInfo, countView, topVids } from '../db/queries';
 
@@ -11,6 +14,43 @@ const hdfs = WebHDFS.createClient({
     host: 'localhost',
     port: 9870,
     path: '/webhdfs/v1'
+});
+
+// Multer setup
+const storage = multer.diskStorage({
+    destination(req, file, cb) {
+        if (!fs.existsSync(path.join(__dirname, '/downloads'))) {
+            fs.mkdirSync(path.join(__dirname, '/downloads'));
+        }
+        cb(null, path.join(__dirname, '/downloads/'));
+    },
+    filename(req, file, cb) {
+        cb(null, file.originalname);
+    },
+});
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+const fileFilter = (
+    req: unknown,
+    file: Express.Multer.File,
+    cb: multer.FileFilterCallback
+) => {
+    if (file.mimetype === 'video/mp4') {
+        cb(null, true); // Accept
+    } else if (file.mimetype === 'image/jpeg') {
+        cb(null, true); // Accept
+    } else {
+        cb(new Error('Invalid File')); // Reject
+    }
+};
+
+// TODO Discuss storing locally or in memory
+const fileUpload = multer({
+    storage,
+    limits: {
+        fileSize: 1024 * 1024 * 1024 * 20, // 20 GB limit
+    },
+    fileFilter,
 });
 
 const streamFromHDFS = (path: string, req: any, res: any, next: NextFunction) => {
@@ -127,19 +167,6 @@ router.get('/view', (req, res, next) => {
     streamFromHDFS(path, req, res, next);
 });
 
-router.get('/view-thumbnail', (req, res, next) => {
-    if (!req.query.vid) {
-        res.status(400).send('Undefined vid');
-        return;
-    }
-    if (!req.query.filetype) {
-        res.status(400).send('Undefined filetype');
-        return;
-    }
-    const path = `/home/videos/${req.query.vid}/thumbnail.${req.query.filetype}`;
-    streamFromHDFS(path, req, res, next);
-});
-
 // router.get('/get-previous-view-time', async (req, res, next) => {
 //     if (!req.query.vid) {
 //         res.status(400).send('Undefined vid');
@@ -174,27 +201,99 @@ const parseGenres = (genres: Genres) => {
 
 //is user making vid or we generate one here and pass it into query?
 router.post('/add-movie', async (req, res, next) => {
-    try {
-        // const { title, description, length } = req.body as AddMovieRequest;
+    const upload = fileUpload.fields([{ name: 'video', maxCount: 1 }, { name: 'thumbnail', maxCount: 1 }]);
+    // @ts-ignore
+    upload(req, res, async (err) => {
+        if (err) {
+            console.error(err);
+            res.statusMessage = 'Problem uploading file.';
+            res.status(400).send();
+            return;
+        }
+        const files = req.files;
+        // @ts-ignore
+        const videoFile = files['video'][0];
+        // @ts-ignore
+        const thumbnailFile = files['thumbnail'][0];
         const movieInfo = req.body as MovieInfo;
-        if (!movieInfo.title || !movieInfo.length) {
+        if (!movieInfo.title || !movieInfo.length || !movieInfo.releaseDate) {
             res.status(400).send('Undefined Movie Info');
             return;
         }
-        let { released } = req.body as { released: string };
-        if (released === '') {
-            released = Date.toString();
-        }
-        movieInfo.releaseDate = new Date();
         parseGenres(movieInfo);
         console.log(movieInfo);
-        await addFilm(movieInfo);
-        // Maybe get back vid from addFilm call and return so that put webhdfs call can be made on front end (easier with fs)
-        res.status(200).send();
-    } catch (err) {
-        console.error(err);
-        next(err);
-    }
+        try {
+            const vid = await addFilm(movieInfo);
+            console.log(vid);
+            if (!vid) {
+                throw new Error('Undefined vid');
+            }
+
+            const videoFileReadStream = fs.createReadStream(videoFile.path);
+            const videoRemoteFileStream = hdfs.createWriteStream(`/home/videos/${vid}/movie.mp4`);
+            videoFileReadStream.pipe(videoRemoteFileStream);
+            // @ts-ignore
+            videoRemoteFileStream.on('error', function onError(err) {
+                console.error(err);
+                if (videoFile) {
+                    fs.unlink(videoFile.path, (err) => {
+                        if (err) console.error(err);
+                    });
+                }
+                res.statusMessage = 'Video failed to upload to hdfs';
+                res.status(400).send();
+                return;
+            });
+
+            videoRemoteFileStream.on('finish', function onFinish() {
+                console.log('Video Uploaded');
+                if (videoFile) {
+                    fs.unlink(videoFile.path, (err) => {
+                        if (err) console.error(err);
+                    });
+                }
+            });
+
+            const thumbnailFileReadStream = fs.createReadStream(thumbnailFile.path);
+            const thumbnailRemoteFileStream = hdfs.createWriteStream(`/home/videos/${vid}/thumbnail.jpg`);
+            thumbnailFileReadStream.pipe(thumbnailRemoteFileStream);
+            // @ts-ignore
+            thumbnailRemoteFileStream.on('error', function onError(err) {
+                console.error(err);
+                if (thumbnailFile) {
+                    fs.unlink(thumbnailFile.path, (err) => {
+                        if (err) console.error(err);
+                    });
+                }
+                res.statusMessage = 'Thumbnail failed to upload to hdfs';
+                res.status(400).send();
+                return;
+            });
+
+            thumbnailRemoteFileStream.on('finish', function onFinish() {
+                console.log('Thumbnail Uploaded');
+                if (thumbnailFile) {
+                    fs.unlink(thumbnailFile.path, (err) => {
+                        if (err) console.error(err);
+                    });
+                }
+            });
+            res.status(200).send();
+        } catch (err) {
+            console.error(err);
+            // Remove files after use
+            if (videoFile) {
+                fs.unlink(videoFile.path, (err) => {
+                    if (err) console.error(err);
+                });
+            }
+            if (thumbnailFile) {
+                fs.unlink(thumbnailFile.path, (err) => {
+                    if (err) console.error(err);
+                });
+            }
+        }
+    });
 });
 
 router.get('/filter-genre', async (req, res, next) => {
