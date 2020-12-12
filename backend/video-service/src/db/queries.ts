@@ -5,7 +5,9 @@ export interface Auth {
   email: string;
   password: string;
   token: string;
+  plan: number;
 }
+
 export interface Genres {
   comedy: boolean,
   horror: boolean,
@@ -15,13 +17,18 @@ export interface Genres {
   documentary: boolean,
 };
 
-export interface MovieInfo extends Genres { title: string, description: string, length: number, releaseDate: Date };
+export interface MovieInfo extends Genres {
+  title: string,
+  description: string,
+  length: number,
+  releaseDate: Date
+};
 
 export const addFilm = async (movieInfo: MovieInfo): Promise<void> => {
   try {
     const query = {
       text: 'INSERT INTO videos(filmlength, description, title, released, likes, dislikes, views) VALUES($1, $2, $3, $4, 0, 0, 0) RETURNING vid;',
-      values: [movieInfo.length, movieInfo.description, movieInfo.title, movieInfo.releaseDate]
+      values: [movieInfo.length, movieInfo.description, movieInfo.title.toLowerCase(), movieInfo.releaseDate]
     };
     const result = await client.query(query);
     const vid = result.rows[0].vid;
@@ -63,7 +70,7 @@ export const checkExisting = async (email: string) => {      //Let user generate
 export const signUp = async (auth: Auth) => {
   try {
     const query = {
-      text: 'INSERT INTO users(username, email, password, token, created, plantype) VALUES($1, $2, $3, $4, $5, $6) RETURNING uid',
+      text: 'INSERT INTO users(username, email, password, token, created, plantype) VALUES($1, $2, $3, $4, $5, $6) RETURNING uid;',
       values: [auth.username, auth.email, auth.password, auth.token, new Date(), 0]
     }
     const { rows } = await client.query(query);
@@ -76,7 +83,7 @@ export const signUp = async (auth: Auth) => {
 export const signIn = async (auth: Auth) => {
   try {
     const query = {
-      text: 'SELECT username, password, token FROM users WHERE email = $1 RETURNING uid',
+      text: 'SELECT username, password, token FROM users WHERE email = $1 RETURNING uid;',
       values: [auth.email]
     }
     const { rows } = await client.query(query);
@@ -91,7 +98,7 @@ export const signIn = async (auth: Auth) => {
 export const updateUserToken = async (token: string, uid: string) => {
   try {
     const query = {
-      text: 'UPDATE users SET token = $1 WHERE id = $2 RETURNING uid, username, token',
+      text: 'UPDATE users SET token = $1 WHERE id = $2 RETURNING uid, username, token;',
       values: [token, uid]
     }
     const { rows } = await client.query(query);
@@ -127,12 +134,12 @@ export const filterGenre = async (genres: Genres): Promise<any> => {
 };
 
 //higherOrLower is true for higher, false for lower
-export const filterviews = async (desiredViews: number, higherOrLower: boolean): Promise<void> => {
+export const filterViews = async (desiredViews: number, higherOrLower: boolean): Promise<void> => {
   try {
     //filter by videos with a higher viewcount than specified by user in desiredViews
     if (higherOrLower === true) {
       const query = {
-        text: 'SELECT title, views FROM videos WHERE views > $1 ORDER BY views',
+        text: 'SELECT title, views FROM videos WHERE views > $1 ORDER BY views;',
         values: [desiredViews]
       };
       const result = await client.query(query);
@@ -141,7 +148,7 @@ export const filterviews = async (desiredViews: number, higherOrLower: boolean):
     //User wants to filter videos that have a lower viewcount than specified by user in desiredViews
     else {
       const query = {
-        text: 'SELECT title, views FROM videos WHERE views < $1 ORDER BY views',
+        text: 'SELECT title, views FROM videos WHERE views < $1 ORDER BY views;',
         values: [desiredViews]
       };
       const result = await client.query(query);
@@ -157,7 +164,7 @@ export const filterLikes = async (desiredLikes: number, higherOrLower: boolean):
     //filter by videos with a higher like count than specified by user in desiredLikes
     if (higherOrLower === true) {
       const query = {
-        text: 'SELECT title, likes FROM videos WHERE likes > $1 ORDER BY likes',
+        text: 'SELECT title, likes FROM videos WHERE likes > $1 ORDER BY likes;',
         values: [desiredLikes]
       };
       const result = await client.query(query);
@@ -166,7 +173,7 @@ export const filterLikes = async (desiredLikes: number, higherOrLower: boolean):
     //User wants to filter videos that have a lower viewcount than specified by user in desiredViews
     else {
       const query = {
-        text: 'SELECT title, likes FROM videos WHERE likes < $1 ORDER BY likes',
+        text: 'SELECT title, likes FROM videos WHERE likes < $1 ORDER BY likes;',
         values: [desiredLikes]
       };
       const result = await client.query(query);
@@ -177,29 +184,49 @@ export const filterLikes = async (desiredLikes: number, higherOrLower: boolean):
   }
 };
 
-export const filterKeyword = async (keyword: string, genres: Genres): Promise<any> => {
+export const filterKeyword = async (keyword: string, GenreInfo: Genres): Promise<void> => {
   try {
-    console.log("Our keyword is :" + keyword);
+    //Check if all Genres are false, means user wants to search across all Genres
+    let index = 0;
+    let searchGenre = false;
+    for (const genreType in GenreInfo) {
+      if (GenreInfo[genreType] == true) {
+        searchGenre = true;
+      }
+    }
+    console.log("searchgenre is " + searchGenre);
+    //This is if user wants to search for titles and narrow even further via Genre
+    if (searchGenre == true) {
+      const query = {
+        text: 'SELECT Video.title FROM Video WHERE Video.title LIKE \'%\' || $1 || \'%\' AND vid IN (SELECT vid FROM Genres WHERE comedy = $2 AND horror = $3 AND action = $4 AND drama = $5 AND fantasy = $6 AND documentary = $7)',
+        values: [keyword, GenreInfo.comedy, GenreInfo.horror, GenreInfo.action, GenreInfo.drama, GenreInfo.fantasy, GenreInfo.documentary]
+      };
+      const result = await client.query(query);
+      console.log(result);
+    }
+    //User wants to search for titles across all Genres
+    else {
+      const query = {
+        text: 'SELECT Video.title FROM Video WHERE Video.title LIKE \'%\' || $1 || \'%\'',
+        values: [keyword]
+      };
+      const result = await client.query(query);
+      console.log(result);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+export const topVids = async (desiredVideos: number): Promise<void> => {
+  try {
+    //Could pull more information from videos than just title, just need to modify query
     const query = {
-      text: `SELECT videos.vid FROM videos WHERE videos.title LIKE \'%\' || $1 || \'%\' AND vid IN (SELECT vid FROM Genres 
-                WHERE comedy = $2 AND horror = $3 AND action = $4 AND drama = $5 AND fantasy = $6 AND documentary = $7)`,
-      values: [keyword,
-        genres.comedy,
-        genres.horror,
-        genres.action,
-        genres.drama,
-        genres.fantasy,
-        genres.documentary
-      ]
+      text: 'SELECT title, views FROM video ORDER BY views DESC LIMIT $2;',
+      values: [desiredVideos]
     };
-    const { rows } = await client.query(query);
-    const vids: Set<string> = new Set();
-    rows.forEach((video) => {
-      console.log(video);
-      vids.add(video.vid);
-    });
-    console.log(vids);
-    return vids;
+    const result = await client.query(query);
+    console.log(result);
   } catch (err) {
     console.error(err);
   }
@@ -208,7 +235,7 @@ export const filterKeyword = async (keyword: string, genres: Genres): Promise<an
 export const countView = async (vid: string) => {
   try {
     const query = {
-      text: 'UPDATE videos SET views = views + 1 WHERE vid = $1 RETURNING views',
+      text: 'UPDATE videos SET views = views + 1 WHERE vid = $1 RETURNING views;',
       values: [vid]
     }
     const { rows } = await client.query(query);
@@ -217,3 +244,17 @@ export const countView = async (vid: string) => {
 
   }
 }
+
+export const changePlan = async (userID: string, newPlan: number): Promise<void> => {
+  try {
+    const query = {
+      //text: 'UPDATE users SET plantype = $1;',
+      text: 'UPDATE users SET plantype = $1 WHERE CAST( uid AS TEXT)= $2;',
+      values: [newPlan, userID]
+    };
+    const result = await client.query(query);
+    console.log(result);
+  } catch (error) {
+    console.log(error);
+  }
+};

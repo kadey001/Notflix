@@ -3,7 +3,7 @@ import WebHDFS from 'webhdfs';
 import http from 'http';
 import request from 'request';
 
-import { addFilm, filterGenre, filterviews, filterLikes, filterKeyword, Genres, MovieInfo, countView } from '../db/queries';
+import { addFilm, filterGenre, filterViews, filterLikes, filterKeyword, Genres, MovieInfo, countView, topVids } from '../db/queries';
 
 const router = express.Router();
 const hdfs = WebHDFS.createClient({
@@ -168,6 +168,8 @@ const parseGenres = (genres: Genres) => {
         genres.fantasy = false;
     if (!genres.documentary)
         genres.documentary = false;
+    if (!genres.horror)
+        genres.horror = false;
 }
 
 //is user making vid or we generate one here and pass it into query?
@@ -221,12 +223,9 @@ router.get('/filter-genre', async (req, res, next) => {
 
 router.get('/filter-views', async (req, res, next) => {
     try {
-        let desiredViewsQuery = req.query.desiredViews;
-        let higherOrLowerQuery = req.query.higherOrLower;
-        let desiredViewsInt = parseInt(desiredViewsQuery as string);
-        let higherOrLowerBool = (higherOrLowerQuery === 'true');
-        await filterviews(desiredViewsInt, higherOrLowerBool);
-        console.log(desiredViewsInt + ", " + higherOrLowerBool);
+        let desiredViewsQuery = req.body.desiredViews;
+        let higherOrLowerQuery = req.body.higherOrLower;
+        await filterViews(desiredViewsQuery, higherOrLowerQuery);
         res.status(200).send();
     } catch (err) {
         console.error(err);
@@ -236,12 +235,9 @@ router.get('/filter-views', async (req, res, next) => {
 
 router.get('/filter-likes', async (req, res, next) => {
     try {
-        let desiredLikesQuery = req.query.desiredLikes;
-        let higherOrLowerQuery = req.query.higherOrLower;
-        let desiredLikesInt = parseInt(desiredLikesQuery as string);
-        let higherOrLowerBool = (higherOrLowerQuery === 'true');
-        await filterLikes(desiredLikesInt, higherOrLowerBool);
-        console.log(desiredLikesInt + ", " + higherOrLowerBool);
+        let desiredLikesQuery = req.body.desiredLikes;
+        let higherOrLowerQuery = req.body.higherOrLower;
+        await filterLikes(desiredLikesQuery, higherOrLowerQuery);
         res.status(200).send();
     } catch (err) {
         console.error(err);
@@ -251,16 +247,27 @@ router.get('/filter-likes', async (req, res, next) => {
 
 router.get('/search', async (req, res, next) => {
     try {
-        const genres = req.body as Genres;
-        // Undefined genere defaults to false
-        parseGenres(genres);
-        const keyword = req.query.keyword as string;
-        if (keyword === '') {
-            res.status(400).send('No keyword provided');
-            res.end();
+        if (!req.query.keyword) {
+            res.status(400).send();
+            return;
         }
-        await filterKeyword(keyword, genres);
+        const { keyword } = req.query;
+        const genreInfo = req.body as Genres;
+        parseGenres(genreInfo);
+        await filterKeyword(keyword as string, genreInfo);
         console.log();
+        res.status(200).send();
+    } catch (err) {
+        console.error(err);
+        next(err);
+    }
+});
+
+router.get('/top-videos', async (req, res, next) => {
+    try {
+        //let desiredViewsQuery = req.body.desiredViews
+        let desiredVideosQuery = req.body.desiredVideos
+        await topVids(desiredVideosQuery);
         res.status(200).send();
     } catch (err) {
         console.error(err);
