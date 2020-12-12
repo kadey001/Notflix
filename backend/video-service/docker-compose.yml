@@ -14,6 +14,7 @@ services:
             - ./yarn.lock:/usr/app/yarn.lock
             - ./.babelrc:/usr/app/.babelrc
             - ./.env:/usr/app/.env
+            - ./error.log:/usr/app/yarn-error.log
         depends_on:
             - db
     db:

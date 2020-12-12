@@ -1,25 +1,53 @@
 import React, { useState } from "react";
 import { HeaderContainer } from "../containers/header";
 import { Form } from "../components";
-import * as ROUTES from "../constants/routes";
+import axios from "axios";
 import { useHistory } from "react-router-dom";
+
+async function signup(userData) {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  return axios.post(
+    "http://13.77.174.221:3001/auth/sign-up",
+    {
+      username: userData.username,
+      email: userData.email,
+      password: userData.password,
+    },
+    config
+  );
+}
 
 export default function Signup() {
   const history = useHistory();
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [emailAddress, setEmailAddress] = useState("");
-  const [password, setPassword] = useState("");
+  const [userData, setUserData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
   const [error, setError] = useState("");
   const isInvalid =
-    firstName === "" ||
-    lastName === "" ||
-    password === "" ||
-    emailAddress === "";
+    userData.username === "" ||
+    userData.password === "" ||
+    userData.email === "";
 
   const handleSignUp = (event) => {
     event.preventDefault();
-    //handle signup request here
+    signup(userData)
+      .then((result) => {
+        console.log(result);
+        // Result contains the uid for the new user
+        // history.push(``)
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(err.response.statusText);
+      });
+
+    console.log(userData);
   };
 
   return (
@@ -30,26 +58,27 @@ export default function Signup() {
 
         <Form.Base onSubmit={handleSignUp} method="POST">
           <Form.Input
-            placeholder="First name"
-            value={firstName}
-            onChange={({ target }) => setFirstName(target.value)}
-          />
-          <Form.Input
-            placeholder="Last name"
-            value={lastName}
-            onChange={({ target }) => setLastName(target.value)}
+            placeholder="Username"
+            value={userData.userName}
+            onChange={({ target }) =>
+              setUserData({ ...userData, username: target.value })
+            }
           />
           <Form.Input
             placeholder="Email address"
-            value={emailAddress}
-            onChange={({ target }) => setEmailAddress(target.value)}
+            value={userData.emailAddress}
+            onChange={({ target }) =>
+              setUserData({ ...userData, email: target.value })
+            }
           />
           <Form.Input
             type="password"
             autoComplete="off"
             placeholder="Password"
-            value={password}
-            onChange={({ target }) => setPassword(target.value)}
+            value={userData.password}
+            onChange={({ target }) =>
+              setUserData({ ...userData, password: target.value })
+            }
           />
           <Form.Submit disabled={isInvalid} type="submit">
             Sign Up

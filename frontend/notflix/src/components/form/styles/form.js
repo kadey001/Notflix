@@ -82,3 +82,13 @@ export const Submit = styled.button`
     opacity: 0.5;
   }
 `;
+export const Dropdown = styled.select`
+  background-color: #333;
+  border-radius: 4px;
+  border: 0;
+  color: #737373;
+  height: 50px;
+  line-height: 50px;
+  padding: 5px 20px;
+  margin-bottom: 20px;
+`;
