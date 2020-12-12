@@ -43,20 +43,18 @@ export const addFilm = async (movieInfo: MovieInfo): Promise<void> => {
   }
 };
 
-export const addPerson = async (name: string, email: string, password: string, planType?: string): Promise<void> => {      //Let user generate uid? I think we should generate for them
+export const checkExisting = async (email: string) => {      //Let user generate uid? I think we should generate for them
   try {
     const query = {
-      text: 'INSERT INTO users(username,email,password) VALUES($1, $2, $3);',
-      values: [name, email, password]
+      text: 'SELECT uid FROM users WHERE email = $1;',
+      values: [email]
     };
-    const result = await client.query(query);
-    console.log(result);
-    /*const Planquery = {
-        text: 'INSERT INTO plan(type) VALUES($1)',
-        values: [planType]
-    };
-    const Planresult = await client.query(query);
-    console.log(result);*/
+    const { rows } = await client.query(query);
+    if (rows.length === 0) {
+      return false;
+    } else {
+      return true;
+    }
   } catch (err) {
     console.error(err);
   }
@@ -68,8 +66,8 @@ export const signUp = async (auth: Auth) => {
       text: 'INSERT INTO users(username, email, password, token, created, plantype) VALUES($1, $2, $3, $4, $5, $6) RETURNING uid',
       values: [auth.username, auth.email, auth.password, auth.token, new Date(), 0]
     }
-    const result = await client.query(query);
-    console.log(result);
+    const { rows } = await client.query(query);
+    return rows[0].uid;
   } catch (err) {
     console.error(err);
   }
