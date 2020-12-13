@@ -7,6 +7,8 @@ import Icon from "../../components/Icon/Icon";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useHistory, useParams, Link } from "react-router-dom";
 import axios from "axios";
+import CardDetails from "../../components/cardDetails/cardDetails";
+import Overview from "../../components/cardDetails/overview";
 
 import one from "../../img/one.jpg";
 import two from "../../img/two.jpg";
@@ -17,10 +19,44 @@ import six from "../../img/six.jpg";
 
 const content = [one, two, three, four, five, six];
 
-const MovieRows = ({ category, setActive }) => {
+const MovieRows = ({
+  category,
+  setActive,
+  title,
+  description,
+  length,
+  rating,
+}) => {
   const [hovered, setHovered] = useState(false);
   const history = useHistory();
-  const [movies, setMovies] = useState([]);
+  const [movies, setMovies] = useState([
+    {
+      vid: "5186eb59-bed7-4de0-ba7c-5f6ffbc5ae95",
+      thumbnailURL: one,
+      title: "Rats 1",
+      description: "A movie about even more Rats.",
+      length: 10,
+      released: Date,
+      comedy: true,
+      horror: true,
+      action: true,
+      drama: false,
+      fantasy: true,
+    },
+    {
+      vid: "5186eb59-bed7-4de0-ba7c-5f6ffbc5ae96",
+      thumbnailURL: two,
+      title: "Rats 2",
+      description: "A movie about even more Rats.",
+      length: 20,
+      released: Date,
+      comedy: false,
+      horror: true,
+      action: true,
+      drama: false,
+      fantasy: true,
+    },
+  ]);
 
   useEffect(() => {
     async function fetchData() {
@@ -79,21 +115,23 @@ const MovieRows = ({ category, setActive }) => {
           {movies.map((image) => (
             <ContentCard
               key={image.vid}
-              data-img={image.img}
+              data-img={image.thumbnailURL}
               onMouseEnter={handleHover}
               onMouseLeave={handleHover}
             >
-              {image === hovered && (
+              {image.thumbnailURL === hovered && (
                 <div className="content">
                   <Icon
                     type="play"
-                    onClick={history.push(`/watch/${image.vid}`)}
+                    onClick={({ target }) =>
+                      history.push(`/watch/${image.vid}`)
+                    }
                   />
                   <Icon type="info-circle" onClick={getPos} />
                   <Icon type="thumbs-up" />
                 </div>
               )}
-              <img src={image.img} />
+              <img src={image.thumbnailURL} />
             </ContentCard>
           ))}
         </div>
@@ -104,9 +142,9 @@ const MovieRows = ({ category, setActive }) => {
 
 const ContentCard = styled.div`
   position: relative;
-  flex: calc(18vw - 4px);
   flex-shrink: 0;
   height: 9.5vw;
+  width: 18vw;
   margin-right: 4px;
 
   .content {
