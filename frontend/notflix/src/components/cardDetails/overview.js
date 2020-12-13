@@ -5,15 +5,18 @@ import { Button } from "semantic-ui-react";
 /**
  * @function Overview
  */
-const Overview = () => (
-  <div css={OverviewCSS}>
-    <p>title</p>
-    <p>description</p>
-    <p>length</p>
-    <p>rating</p>
-    <Button variant="contained">Play</Button>
-  </div>
-);
+const Overview = (props) => {
+  console.log(props);
+  return (
+    <div css={OverviewCSS}>
+      <p>title: {props.metadata.title}</p>
+      <p>description: {props.metadata.description}</p>
+      <p>length: {props.metadata.length}</p>
+      <p>rating: {props.metadata.rating}</p>
+      <Button variant="contained">Play</Button>
+    </div>
+  );
+};
 
 const OverviewCSS = css`
   max-width: 500px;

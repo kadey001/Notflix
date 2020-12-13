@@ -1,12 +1,24 @@
 /** @jsx jsx */
-import React, { useState, useEffect, forwardRef } from "react";
+import React, { useState, useEffect, forwardRef, useContext } from "react";
 import { css, jsx } from "@emotion/react";
 import Icon from "../../components/Icon/Icon";
+import { Button } from "semantic-ui-react";
+import { useHistory } from "react-router-dom";
+import { AuthContext } from "../../context/auth";
 
 const leftLinks = ["Upload", "Subscriptions"];
 
 const BrowseHeader = forwardRef((props, ref) => {
   const [scrolled, setScrolled] = useState(false);
+  const history = useHistory();
+  const { dispatch } = useContext(AuthContext);
+
+  const handleSignOut = () => {
+    dispatch({
+      type: "LOGOUT"
+    })
+    history.push('/');
+  }
 
   useEffect(() => {
     const handleScroll = () =>
@@ -66,7 +78,7 @@ const BrowseHeader = forwardRef((props, ref) => {
           <Icon type="search" />
         </li>
         <li>
-          <a href="/"> Sign Out </a>
+          <Button onClick={handleSignOut}> Sign Out </Button>
         </li>
       </ul>
     </nav>

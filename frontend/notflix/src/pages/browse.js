@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Rows from "../components/movieRows/movieRows";
 import Footer from "../components/footer/footer";
 import CardDetails from "../components/cardDetails/cardDetails";
@@ -6,14 +6,23 @@ import BrowseHeader from "../components/browseHeader/browseHeader";
 import HeaderJumbotron from "../components/headerJumbotron/headerJumbotron";
 import { Global, css } from "@emotion/react";
 
-const categories = ["Comedy", "Horror", "Action", "Drama", "Fantasy"];
+import { AuthContext } from '../context/auth';
+import { Redirect } from "react-router-dom";
+
+const categories = ["Top", "liked", "Comedy", "Horror", "Action", "Drama", "Fantasy", "Documentary"];
 const initialRow = {
   category: "",
   pos: { top: 0, bottom: 0 },
 };
 export default function Browse() {
   const [activeRow, setActiveRow] = useState(initialRow);
-  const [genre, setGenre] = useState([]);
+  const [metadata, setMetadata] = useState({
+    title: 'Title',
+    description: 'Desc',
+    length: '20 mins',
+    rating: 50
+  });
+  const { state } = React.useContext(AuthContext);
 
   const {
     category,
@@ -33,16 +42,21 @@ export default function Browse() {
   }, [category]);
 
   return (
-    <>
-      <Global styles={GlobalCSS} />
-      <BrowseHeader />
-      <HeaderJumbotron />
-      {categories.slice(0).map((category) => (
-        <Rows key={category} category={category} setActive={setActive} />
-      ))}
-      <CardDetails category={category} pos={bottom} setActive={setActive} />
-      <Footer />
-    </>
+    <div>{state.isAuthenticated ?
+      <>
+        <Global styles={GlobalCSS} />
+        <BrowseHeader />
+        <HeaderJumbotron />
+        {categories.slice(0).map((category) => (
+          <Rows key={category} category={category} setActive={setActive} setMetadata={setMetadata} />
+        ))}
+        <CardDetails category={category} pos={bottom} setActive={setActive} metadata={metadata} />
+        <Footer />
+      </>
+      :
+      <Redirect to='/' />
+    }
+    </div>
   );
 }
 const GlobalCSS = css`

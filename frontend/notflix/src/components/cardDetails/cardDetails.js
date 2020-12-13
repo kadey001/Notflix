@@ -4,7 +4,7 @@ import { css, jsx } from "@emotion/react";
 import Icon from "../../components/Icon/Icon";
 import Overview from "./overview";
 
-const DetailPane = ({ category, pos, setActive }) =>
+const DetailPane = ({ category, pos, setActive, metadata }) =>
   category && (
     <div
       css={css`
@@ -30,7 +30,7 @@ const DetailPane = ({ category, pos, setActive }) =>
           padding: 2vw 4vw 0;
         `}
       >
-        <Overview />
+        <Overview metadata={metadata} />
         <Icon type="times" onClick={setActive} />
       </div>
     </div>
