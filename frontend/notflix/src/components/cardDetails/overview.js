@@ -2,18 +2,22 @@
 import React from "react";
 import { css, jsx } from "@emotion/react";
 import { Button } from "semantic-ui-react";
+import { useHistory } from "react-router-dom";
 /**
  * @function Overview
  */
 const Overview = (props) => {
-  console.log(props);
+  const history = useHistory();
+  console.log('Props: ', props);
   return (
     <div css={OverviewCSS}>
       <p>title: {props.metadata.title}</p>
       <p>description: {props.metadata.description}</p>
-      <p>length: {props.metadata.length}</p>
-      <p>rating: {props.metadata.rating}</p>
-      <Button variant="contained">Play</Button>
+      <p>length: {props.metadata.length} min</p>
+      <p>likes: {props.metadata.likes}</p>
+      <p>dislikes: {props.metadata.dislikes}</p>
+      <p>views: {props.metadata.views}</p>
+      <Button variant="contained" onClick={() => history.replace(`/watch/${props.metadata.vid}`)}>Play</Button>
     </div>
   );
 };

@@ -6,6 +6,7 @@ import styled from "@emotion/styled";
 import Icon from "../../components/Icon/Icon";
 import { useHistory } from "react-router-dom";
 import { getGenre } from '../api/videos';
+import axios from 'axios';
 
 const setGenres = (category) => {
   const genres = {
@@ -42,23 +43,29 @@ const MovieRows = ({
   const history = useHistory();
   const [movies, setMovies] = useState([{}]);
 
-  useEffect(async () => {
+  useEffect(() => {
     const genres = setGenres(category);
     getGenre(genres).then((result) => {
       console.log(result.data);
       setMovies(result.data);
     }).catch((err) => {
-      console.error(err);
+      if (axios.isCancel(err)) {
+      } else {
+        throw err
+      }
     });
   }, []);
 
   const openCard = (metadata) => {
-    console.log(metadata.title);
+    console.log(metadata);
     setMetadata({
+      vid: metadata.vid,
       title: metadata.title,
       description: metadata.description,
       length: metadata.length,
-      rating: metadata.rating,
+      likes: metadata.likes,
+      dislikes: metadata.dislikes,
+      views: metadata.views,
       genres: metadata.genres,
     });
   }
