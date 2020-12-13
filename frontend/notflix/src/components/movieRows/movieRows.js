@@ -20,8 +20,17 @@ const content = [one, two, three, four, five, six];
 const MovieRows = ({ category, setActive }) => {
   const [hovered, setHovered] = useState(false);
   const history = useHistory();
-  const [vid, setVid] = useState();
   const [movies, setMovies] = useState([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      const request = await axios.get("");
+      console.table(request.data.results);
+      setMovies(request.data.results);
+      return request;
+    }
+    fetchData();
+  }, []);
 
   const handleHover = useCallback((e) => {
     e.type === "mouseenter"
@@ -33,9 +42,7 @@ const MovieRows = ({ category, setActive }) => {
     const pos = e.target.parentElement.getBoundingClientRect();
     setActive({ category, pos });
   }, []);
-  function handleOnSubmit() {
-    history.push(`/watch/${vid}`);
-  }
+
   return (
     <div
       className="movieRows"
@@ -69,21 +76,24 @@ const MovieRows = ({ category, setActive }) => {
             }
           `}
         >
-          {content.map((img) => (
+          {movies.map((image) => (
             <ContentCard
-              key={img}
-              data-img={img}
+              key={image.vid}
+              data-img={image.img}
               onMouseEnter={handleHover}
               onMouseLeave={handleHover}
             >
-              {img === hovered && (
+              {image === hovered && (
                 <div className="content">
-                  <Icon type="play" onClick={handleOnSubmit} />
+                  <Icon
+                    type="play"
+                    onClick={history.push(`/watch/${image.vid}`)}
+                  />
                   <Icon type="info-circle" onClick={getPos} />
                   <Icon type="thumbs-up" />
                 </div>
               )}
-              <img src={img} />
+              <img src={image.img} />
             </ContentCard>
           ))}
         </div>

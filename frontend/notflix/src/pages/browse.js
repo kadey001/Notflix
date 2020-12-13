@@ -6,20 +6,14 @@ import BrowseHeader from "../components/browseHeader/browseHeader";
 import HeaderJumbotron from "../components/headerJumbotron/headerJumbotron";
 import { Global, css } from "@emotion/react";
 
-const categories = [
-  "Comedy",
-  "Horror",
-  "Action",
-  "Drama",
-  "Fantasy",
-  "Documentary",
-];
+const categories = ["Comedy", "Horror", "Action", "Drama", "Fantasy"];
 const initialRow = {
   category: "",
   pos: { top: 0, bottom: 0 },
 };
 export default function Browse() {
   const [activeRow, setActiveRow] = useState(initialRow);
+  const [genre, setGenre] = useState([]);
 
   const {
     category,
@@ -41,10 +35,9 @@ export default function Browse() {
   return (
     <>
       <Global styles={GlobalCSS} />
-      {/* <HeaderContainer></HeaderContainer> */}
       <BrowseHeader />
       <HeaderJumbotron />
-      {categories.slice(1).map((category) => (
+      {categories.slice(0).map((category) => (
         <Rows key={category} category={category} setActive={setActive} />
       ))}
       <CardDetails category={category} pos={bottom} setActive={setActive} />
