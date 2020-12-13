@@ -5,12 +5,12 @@ import { Button } from "semantic-ui-react";
 /**
  * @function Overview
  */
-const Overview = () => (
+const Overview = (title, description, length, rating) => (
   <div css={OverviewCSS}>
-    <p>Title</p>
-    <p>Description</p>
-    <p>Length</p>
-    <p>Rating</p>
+    <p>{title}</p>
+    <p>{description}</p>
+    <p>{length}</p>
+    <p>{rating}</p>
     <Button variant="contained">Play</Button>
   </div>
 );

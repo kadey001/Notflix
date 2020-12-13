@@ -35,7 +35,6 @@ export default function Browse() {
   return (
     <>
       <Global styles={GlobalCSS} />
-      {/* <HeaderContainer></HeaderContainer> */}
       <BrowseHeader />
       <HeaderJumbotron />
       {categories.slice(0).map((category) => (

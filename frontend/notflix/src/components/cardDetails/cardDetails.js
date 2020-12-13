@@ -30,7 +30,7 @@ const DetailPane = ({ category, pos, setActive }) =>
           padding: 2vw 4vw 0;
         `}
       >
-        <Overview />
+        <Overview title={""} description={""} length={""} rating={""} />
         <Icon type="times" onClick={setActive} />
       </div>
     </div>
