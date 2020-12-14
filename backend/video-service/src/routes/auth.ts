@@ -66,9 +66,13 @@ router.post('/sign-up', async (req, res, next) => {
         auth.password = hash;
         const token = await createToken();
         auth.token = token;
-        const uid = await signUp(auth);
+        const response = await signUp(auth);
         // Add uid route/file to webhdfs
-        res.status(200).send(uid);
+        res.status(200).send({
+            uid: response.uid,
+            token: response.token,
+            username: response.username
+        });
     } catch (err) {
         console.error(err);
         res.status(400).send(err.message);
@@ -90,8 +94,17 @@ router.post('/sign-in', async (req, res, next) => {
             return;
         }
         const response = await signIn(auth);
+        if (!response) {
+            res.statusMessage = 'Account Not Found';
+            res.status(400).send();
+            return;
+        }
         await checkPassword(auth.password, response.password);
-        res.status(200).send();
+        res.status(200).send({
+            uid: response.uid,
+            token: response.token,
+            username: response.username
+        });
     } catch (err) {
         console.error(err);
         res.status(400).send(err.message);
