@@ -13,10 +13,10 @@ import * as ROUTES from "./constants/routes";
 import { AuthContext } from './context/auth';
 
 const initialState = {
-  isAuthenticated: localStorage.getItem('authenticated'),
-  uid: localStorage.getItem('uid'),
-  username: localStorage.getItem('username'),
-  token: localStorage.getItem('token')
+  isAuthenticated: JSON.parse(localStorage.getItem("authenticated")),
+  uid: JSON.parse(localStorage.getItem("uid")),
+  username: JSON.parse(localStorage.getItem("username")),
+  token: JSON.parse(localStorage.getItem("token"))
 };
 const reducer = (state, action) => {
   switch (action.type) {
