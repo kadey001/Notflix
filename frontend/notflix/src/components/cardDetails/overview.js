@@ -23,17 +23,56 @@ const Overview = (props) => {
 
   const likeClick = (e) => {
     e.preventDefault();
-    likeClick(auth.state.uid, props.metadata.vid).then((result) => {
-      setIsLiked(true);
-      setLoadingLike(false);
-    });
+    setLoadingLike(true);
+    console.log("Add to liked");
+    likeClick(auth.state.uid, props.metadata.vid)
+      .then((result) => {
+        setIsLiked(true);
+        setLoadingLike(false);
+        // Update liked videos context
+        const likedVideos = video.state.likedVideos;
+        likedVideos.push({
+          ...props.metadata,
+        });
+        video.dispatch({
+          type: "UPDATE LIKED",
+          payload: {
+            likedVideos: likedVideos,
+          },
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
   };
   const removeLikeClick = (e) => {
     e.preventDefault();
-    removeLikeClick(auth.state.uid, props.metadata.vid).then((result) => {
-      setIsLiked(false);
-      setLoadingLike(false);
-    });
+    setLoadingLike(true);
+    console.log("Remove from liked");
+    removeLikeClick(auth.state.uid, props.metadata.vid)
+      .then((result) => {
+        setIsLiked(false);
+        setLoadingLike(false);
+        // Update liked videos context
+        const likedVideos = video.state.likedVideos;
+        const updatedLike = [];
+        for (let i = 0; i < likedVideos.length; i++) {
+          if (likedVideos[i].vid !== props.metadata.vid) {
+            updatedLike.push(likedVideos[i]);
+          }
+        }
+        video.dispatch({
+          type: "UPDATE LIKED",
+          payload: {
+            likedVideos: likedVideos,
+          },
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
   };
 
   const addList = (e) => {
