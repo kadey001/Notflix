@@ -92,7 +92,7 @@ const Overview = (props) => {
       <p>views: {props.metadata.views}</p>
       <Button
         variant="contained"
-        onClick={() => history.replace(`/watch/${props.metadata.vid}`)}
+        onClick={() => history.push(`/watch/${props.metadata.vid}`)}
       >
         Play
       </Button>

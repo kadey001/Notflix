@@ -15,6 +15,8 @@ const DetailPane = ({ category, pos, setActive, metadata }) =>
         border: 2px solid white;
         top: ${pos + window.scrollY}px;
         z-index: 99;
+        color: white;
+
         .Icon {
           font-size: 32px;
           color: white;
