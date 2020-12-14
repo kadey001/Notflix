@@ -6,7 +6,7 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 
-import { addFilm, filterGenre, filterViews, filterLikes, filterKeyword, Genres, MovieInfo, countView, topVids } from '../db/queries';
+import { addFilm, filterGenre, filterViews, filterLikes, filterKeyword, Genres, MovieInfo, MetaData, countView, topVids, metadata, likeVideo } from '../db/queries';
 
 const router = express.Router();
 const hdfs = WebHDFS.createClient({
@@ -65,10 +65,13 @@ const streamFromHDFS = (path: string, req: any, res: any, next: NextFunction) =>
     const statReq = http.request(options, (statRes) => {
         statRes.on('data', data => {
             const parsedData = JSON.parse(data);
-            if (!parsedData) {
+            console.log(parsedData);
+            if (!parsedData || typeof parsedData == 'undefined') {
                 res.status(400).send('Undefined parseData');
-            } else if (!parsedData.FileStatus) {
+                return;
+            } else if (!parsedData.FileStatus || typeof parsedData.FileStatus == 'undefined') {
                 res.status(400).send('Undefined parsedData.FileStatus');
+                return;
             }
             const fileSize = parsedData.FileStatus.length;
             const range = req.headers.range;
@@ -181,6 +184,7 @@ router.get('/count-view', async (req, res, next) => {
     //const { videoID } = req.query.videoID; // Get video id from params
     const vid = req.query.vid;
     await countView(vid as string);
+    // TODO add view to spark as well
     res.status(200).send();
 });
 
@@ -308,11 +312,28 @@ router.post('/add-movie', async (req, res, next) => {
     });
 });
 
-router.get('/filter-genre', async (req, res, next) => {
+router.post('/filter-genre', async (req, res, next) => {
     try {
         const genres = req.body as Genres;
         parseGenres(genres);
-        const vids: Set<any> = await filterGenre(genres);
+        const vids: Array<MetaData> = await filterGenre(genres);
+        if (!vids) {
+            res.status(400).send('Invalid Response');
+            return;
+        }
+        console.log(vids);
+        res.status(200).send(JSON.stringify(vids));
+    } catch (err) {
+        console.error(err);
+        next(err);
+    }
+});
+
+router.get('/filter-views', async (req, res, next) => {
+    try {
+        let desiredViewsQuery = req.body.desiredViews;
+        let higherOrLowerQuery = req.body.higherOrLower;
+        const vids: Set<any> = await filterViews(desiredViewsQuery, higherOrLowerQuery);
         if (!vids) {
             res.status(400).send('Invalid Response');
             return;
@@ -332,29 +353,41 @@ router.get('/filter-genre', async (req, res, next) => {
     }
 });
 
-router.get('/filter-views', async (req, res, next) => {
+
+router.get('/filter-likes', async (req, res, next) => {
     try {
-        let desiredViewsQuery = req.body.desiredViews;
+        let desiredLikesQuery = req.body.desiredLikes;
         let higherOrLowerQuery = req.body.higherOrLower;
-        await filterViews(desiredViewsQuery, higherOrLowerQuery);
-        res.status(200).send();
+        const vids: Set<any> = await filterLikes(desiredLikesQuery, higherOrLowerQuery);
+        const response: Array<{ vid: string, img: string }> = [];
+        vids.forEach((vid) => {
+            response.push({
+                vid,
+                img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`
+            })
+        });
+        res.status(200).send(JSON.stringify(response));
     } catch (err) {
         console.error(err);
         next(err);
     }
 });
 
-router.get('/filter-likes', async (req, res, next) => {
-    try {
-        let desiredLikesQuery = req.body.desiredLikes;
-        let higherOrLowerQuery = req.body.higherOrLower;
-        await filterLikes(desiredLikesQuery, higherOrLowerQuery);
-        res.status(200).send();
-    } catch (err) {
-        console.error(err);
-        next(err);
-    }
-});
+const parseKeyword = (keyword: string) => {
+    if (keyword.toLowerCase() === 'comedy')
+        return { comedy: true };
+    if (keyword.toLowerCase() === 'drama')
+        return { drama: true };
+    if (keyword.toLowerCase() === 'fantasy')
+        return { fantasy: true };
+    if (keyword.toLowerCase() === 'action')
+        return { action: true };
+    if (keyword.toLowerCase() === 'horror')
+        return { horror: true };
+    if (keyword.toLowerCase() === 'documentary')
+        return { documentary: true };
+    return false;
+}
 
 router.get('/search', async (req, res, next) => {
     try {
@@ -362,12 +395,34 @@ router.get('/search', async (req, res, next) => {
             res.status(400).send();
             return;
         }
-        const { keyword } = req.query;
-        const genreInfo = req.body as Genres;
-        parseGenres(genreInfo);
-        await filterKeyword(keyword as string, genreInfo);
-        console.log();
-        res.status(200).send();
+        const { keyword } = req.query as { keyword: string };
+        const result = parseKeyword(keyword);
+        if (result) {
+            parseGenres(result);
+            const vids: Array<MetaData> = await filterGenre(result);
+            if (!vids) {
+                res.status(400).send('Invalid Response');
+                return;
+            }
+            console.log(vids);
+            res.status(200).send(JSON.stringify(vids));
+        } else {
+            const vids: Set<string> = await filterKeyword(keyword);
+            if (!vids) {
+                res.statusMessage = 'Undefined results';
+                res.status(400).send();
+                return;
+            }
+            const promises: Array<Promise<MetaData | undefined>> = [];
+            vids.forEach((vid) => {
+                const resultPromise = metadata(vid);
+                promises.push(resultPromise);
+            });
+            Promise.all(promises).then((result) => {
+                console.log("PROMISE RESULT: ", result);
+                res.status(200).send(JSON.stringify(result));
+            });
+        }
     } catch (err) {
         console.error(err);
         next(err);
@@ -377,13 +432,60 @@ router.get('/search', async (req, res, next) => {
 router.get('/top-videos', async (req, res, next) => {
     try {
         //let desiredViewsQuery = req.body.desiredViews
-        let desiredVideosQuery = req.body.desiredVideos
-        await topVids(desiredVideosQuery);
-        res.status(200).send();
+        // let desiredVideosQuery = req.body.desiredVideos
+        const vids: Set<any> = await topVids(10);
+        if (!vids) {
+            res.statusMessage = 'No top videos found',
+                res.status(400).send();
+        }
+        // const response: Array<{ vid: string, img: string }> = [];
+        const promises: Array<Promise<MetaData | undefined>> = [];
+        vids.forEach((vid) => {
+            const resultPromise = metadata(vid);
+            promises.push(resultPromise);
+        });
+        Promise.all(promises).then((result) => {
+            console.log("PROMISE RESULT: ", result);
+            res.status(200).send(JSON.stringify(result));
+        })
     } catch (err) {
         console.error(err);
         next(err);
     }
 });
+
+router.post('/metadata', async (req, res, next) => {
+    try {
+        const { vid } = req.body;
+        if (!vid) {
+            res.statusMessage = 'vid undefined.';
+            res.status(400).send();
+            return;
+        }
+        const result = await metadata(vid);
+        if (!result) {
+            res.statusMessage = 'No result found',
+                res.status(400).send();
+        }
+        res.status(200).send(result);
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+
+router.post('/like-video', async (req, res, next) => {
+    const { vid } = req.body;
+    try {
+        const result = await likeVideo(vid);
+        if (!result) {
+            res.statusMessage = 'No result found',
+                res.status(400).send();
+        }
+        res.status(200).send(result);
+    } catch (error) {
+
+    }
+})
 
 export default router;
