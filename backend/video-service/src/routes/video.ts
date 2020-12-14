@@ -6,7 +6,26 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 
-import { addFilm, filterGenre, filterViews, filterLikes, filterKeyword, Genres, MovieInfo, MetaData, countView, topVids, metadata, likeVideo } from '../db/queries';
+import {
+    Genres,
+    MovieInfo,
+    MetaData,
+    Comment,
+    addFilm,
+    filterGenre,
+    filterViews,
+    filterLikes,
+    filterKeyword,
+    countView,
+    topVids,
+    metadata,
+    updateVideoLikes,
+    updateVideoDislikes,
+    addComment,
+    getComments,
+    updateCommentLike,
+    updateCommentDislike
+} from '../db/queries';
 
 const router = express.Router();
 const hdfs = WebHDFS.createClient({
@@ -65,7 +84,6 @@ const streamFromHDFS = (path: string, req: any, res: any, next: NextFunction) =>
     const statReq = http.request(options, (statRes) => {
         statRes.on('data', data => {
             const parsedData = JSON.parse(data);
-            console.log(parsedData);
             if (!parsedData || typeof parsedData == 'undefined') {
                 res.status(400).send('Undefined parseData');
                 return;
@@ -146,7 +164,7 @@ const streamFromHDFS = (path: string, req: any, res: any, next: NextFunction) =>
                 else {
                     stream.pipe(res)
                         .on('error', (err: any) => {
-                            console.log(err);
+                            console.error(err);
                             next(err);
                         }).on('finish', () => {
                             console.log('Pipe Finished');
@@ -180,11 +198,14 @@ router.get('/view', (req, res, next) => {
 //     res.status(200).json({ result: 0.0 })
 // });
 
-router.get('/count-view', async (req, res, next) => {
-    //const { videoID } = req.query.videoID; // Get video id from params
-    const vid = req.query.vid;
+router.post('/count-view', async (req, res, next) => {
+    const { vid } = req.body; // Get video id from params
+    if (!vid) {
+        res.statusMessage = 'No vid provided',
+            res.status(400).send();
+        return;
+    }
     await countView(vid as string);
-    // TODO add view to spark as well
     res.status(200).send();
 });
 
@@ -220,7 +241,6 @@ router.post('/add-movie', async (req, res, next) => {
         // @ts-ignore
         const thumbnailFile = files['thumbnail'][0];
         const movieInfo = req.body as MovieInfo;
-        console.log(movieInfo);
         if (!movieInfo.title || !movieInfo.length || !movieInfo.released) {
             res.statusMessage = 'Undefined Movie Info';
             if (videoFile) {
@@ -237,10 +257,8 @@ router.post('/add-movie', async (req, res, next) => {
             return;
         }
         parseGenres(movieInfo);
-        console.log(movieInfo);
         try {
             const vid = await addFilm(movieInfo);
-            console.log(vid);
             if (!vid) {
                 throw new Error('Undefined vid');
             }
@@ -318,10 +336,9 @@ router.post('/filter-genre', async (req, res, next) => {
         parseGenres(genres);
         const vids: Array<MetaData> = await filterGenre(genres);
         if (!vids) {
-            res.status(400).send('Invalid Response');
+            res.status(400).send('Undefined results');
             return;
         }
-        console.log(vids);
         res.status(200).send(JSON.stringify(vids));
     } catch (err) {
         console.error(err);
@@ -335,18 +352,17 @@ router.get('/filter-views', async (req, res, next) => {
         let higherOrLowerQuery = req.body.higherOrLower;
         const vids: Set<any> = await filterViews(desiredViewsQuery, higherOrLowerQuery);
         if (!vids) {
-            res.status(400).send('Invalid Response');
+            res.status(400).send('Undefined results');
             return;
         }
-        // Create thumbnail link for each vid from list of vids in response
-        const response: Array<{ vid: string, img: string }> = [];
+        const promises: Array<Promise<MetaData | undefined>> = [];
         vids.forEach((vid) => {
-            response.push({
-                vid,
-                img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`
-            })
+            const resultPromise = metadata(vid);
+            promises.push(resultPromise);
         });
-        res.status(200).send(JSON.stringify(response));
+        Promise.all(promises).then((result) => {
+            res.status(200).send(JSON.stringify(result));
+        });
     } catch (err) {
         console.error(err);
         next(err);
@@ -359,14 +375,18 @@ router.get('/filter-likes', async (req, res, next) => {
         let desiredLikesQuery = req.body.desiredLikes;
         let higherOrLowerQuery = req.body.higherOrLower;
         const vids: Set<any> = await filterLikes(desiredLikesQuery, higherOrLowerQuery);
-        const response: Array<{ vid: string, img: string }> = [];
+        if (!vids) {
+            res.status(400).send('Undefined results');
+            return;
+        }
+        const promises: Array<Promise<MetaData | undefined>> = [];
         vids.forEach((vid) => {
-            response.push({
-                vid,
-                img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`
-            })
+            const resultPromise = metadata(vid);
+            promises.push(resultPromise);
         });
-        res.status(200).send(JSON.stringify(response));
+        Promise.all(promises).then((result) => {
+            res.status(200).send(JSON.stringify(result));
+        });
     } catch (err) {
         console.error(err);
         next(err);
@@ -401,10 +421,9 @@ router.get('/search', async (req, res, next) => {
             parseGenres(result);
             const vids: Array<MetaData> = await filterGenre(result);
             if (!vids) {
-                res.status(400).send('Invalid Response');
+                res.status(400).send('Undefined results');
                 return;
             }
-            console.log(vids);
             res.status(200).send(JSON.stringify(vids));
         } else {
             const vids: Set<string> = await filterKeyword(keyword);
@@ -419,7 +438,6 @@ router.get('/search', async (req, res, next) => {
                 promises.push(resultPromise);
             });
             Promise.all(promises).then((result) => {
-                console.log("PROMISE RESULT: ", result);
                 res.status(200).send(JSON.stringify(result));
             });
         }
@@ -435,17 +453,15 @@ router.get('/top-videos', async (req, res, next) => {
         // let desiredVideosQuery = req.body.desiredVideos
         const vids: Set<any> = await topVids(10);
         if (!vids) {
-            res.statusMessage = 'No top videos found',
+            res.statusMessage = 'Undefined results',
                 res.status(400).send();
         }
-        // const response: Array<{ vid: string, img: string }> = [];
         const promises: Array<Promise<MetaData | undefined>> = [];
         vids.forEach((vid) => {
             const resultPromise = metadata(vid);
             promises.push(resultPromise);
         });
         Promise.all(promises).then((result) => {
-            console.log("PROMISE RESULT: ", result);
             res.status(200).send(JSON.stringify(result));
         })
     } catch (err) {
@@ -458,7 +474,7 @@ router.post('/metadata', async (req, res, next) => {
     try {
         const { vid } = req.body;
         if (!vid) {
-            res.statusMessage = 'vid undefined.';
+            res.statusMessage = 'Undefined results';
             res.status(400).send();
             return;
         }
@@ -473,11 +489,30 @@ router.post('/metadata', async (req, res, next) => {
     }
 });
 
-
-router.post('/like-video', async (req, res, next) => {
-    const { vid } = req.body;
+router.post('/update-likes', async (req, res, next) => {
+    const { vid, increment } = req.body;
+    if (vid === undefined || increment === undefined) {
+        res.statusMessage = 'Invalid Body',
+            res.status(400).send();
+        return;
+    }
     try {
-        const result = await likeVideo(vid);
+        const result = await updateVideoLikes(vid, increment);
+        if (!result) {
+            res.statusMessage = 'No result found';
+            res.status(400).send();
+            return;
+        }
+        res.status(200).send(result);
+    } catch (error) {
+
+    }
+})
+
+router.post('/update-dislikes', async (req, res, next) => {
+    const { vid, increment } = req.body;
+    try {
+        const result = await updateVideoDislikes(vid, increment);
         if (!result) {
             res.statusMessage = 'No result found',
                 res.status(400).send();
@@ -487,5 +522,64 @@ router.post('/like-video', async (req, res, next) => {
 
     }
 })
+
+router.post('/comment', async (req, res, next) => {
+    const comment = req.body as Comment;
+    if (!comment) {
+        res.statusMessage = 'Undefined comment';
+        res.status(400).send();
+    }
+    try {
+        const result = await addComment(comment);
+        console.log(result);
+        res.status(200).send(result)
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+router.post('/get-comments', async (req, res, next) => {
+    const { vid } = req.body;
+    if (!vid) {
+        res.statusMessage = 'Undefined comment';
+        res.status(400).send();
+    }
+    try {
+        const result = await getComments(vid);
+        console.log(result);
+        res.status(200).send(result)
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+router.post('/like-comment', async (req, res, next) => {
+    const { cid, uid, increment } = req.body as { cid: string, uid: string, increment: boolean };
+    if (!cid || !uid || increment === undefined) {
+        res.statusMessage = 'Undefined body';
+        res.status(400).send();
+    }
+    try {
+        await updateCommentLike(cid, uid, increment);
+        res.status(200).send();
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+
+router.post('/dislike-comment', async (req, res, next) => {
+    const { cid, uid, increment } = req.body as { cid: string, uid: string, increment: boolean };
+    if (!cid || !uid) {
+        res.statusMessage = 'Undefined body';
+        res.status(400).send();
+    }
+    try {
+        await updateCommentDislike(cid, uid, increment);
+        res.status(200).send();
+    } catch (err) {
+        console.error(err);
+    }
+});
 
 export default router;

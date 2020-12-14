@@ -37,6 +37,15 @@ export interface MetaData {
   genres: Genres
 }
 
+export interface Comment {
+  uid: string;
+  vid: string;
+  username: string;
+  comment: string;
+  likes?: number;
+  dislikes?: number;
+}
+
 export const addFilm = async (movieInfo: MovieInfo): Promise<string | undefined> => {
   try {
     const query = {
@@ -165,6 +174,103 @@ export const updateUserToken = async (token: string, uid: string) => {
 //   return result;
 // })
 
+const defaultGenres = {
+  comedy: false,
+  horror: false,
+  action: false,
+  drama: false,
+  fantasy: false,
+  documentary: false,
+}
+
+// TODO Update to just get all genres since we need all of them anyways 
+// export const getGenres = async () => {
+//   try {
+//     const vids: Array<MetaData> = [];
+//     const comedyQuery = {
+//       text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+//         (SELECT vid FROM Genres WHERE comedy = $1);`,
+//       values: [true]
+//     };
+//     const comedyResult = await client.query(comedyQuery);
+//     comedyResult.rows.forEach((video) => {
+//       vids.push({
+//         ...video,
+//         img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+//         genres: genres
+//       });
+//     });
+//     const actionQuery = {
+//       text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+//       (SELECT vid FROM Genres WHERE action = $1);`,
+//       values: [true]
+//     };
+//     const actionResult = await client.query(actionQuery);
+//     actionResult.rows.forEach((video) => {
+//       vids.push({
+//         ...video,
+//         img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+//         genres: { ...defaultGenres, action: true }
+//       });
+//     });
+//     const dramaQuery = {
+//       text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+//       (SELECT vid FROM Genres WHERE drama = $1);`,
+//       values: [true]
+//     };
+//     const dramaResult = await client.query(dramaQuery);
+//     dramaResult.rows.forEach((video) => {
+//       vids.push({
+//         ...video,
+//         img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+//         genres: { ...defaultGenres, drama: true }
+//       });
+//     });
+//     const fantasyQuery = {
+//       text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+//       (SELECT vid FROM Genres WHERE fantasy = $1);`,
+//       values: [true]
+//     };
+//     const fantasyResult = await client.query(fantasyQuery);
+//     fantasyResult.rows.forEach((video) => {
+//       vids.push({
+//         ...video,
+//         img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+//         genres: { ...defaultGenres, fantasy: true }
+//       });
+//     });
+//     const horrorQuery = {
+//       text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+//       (SELECT vid FROM Genres WHERE horror = $1);`,
+//       values: [true]
+//     };
+//     const horrorResult = await client.query(horrorQuery);
+//     horrorResult.rows.forEach((video) => {
+//       vids.push({
+//         ...video,
+//         img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+//         genres: { ...defaultGenres, horror: true }
+//       });
+//     });
+//     const documentaryQuery = {
+//       text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+//       (SELECT vid FROM Genres WHERE documentary = $1);`,
+//       values: [true]
+//     };
+//     const documentaryResult = await client.query(documentaryQuery);
+//     documentaryResult.rows.forEach((video) => {
+//       vids.push({
+//         ...video,
+//         img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+//         genres: { ...defaultGenres, documentary: true }
+//       });
+//     });
+//     return vids;
+//   } catch (err) {
+//     console.error(err);
+//   }
+// }
+
 export const filterGenre = async (genres: Genres): Promise<any> => {
   try {
     const vids: Array<MetaData> = [];
@@ -258,7 +364,6 @@ export const filterGenre = async (genres: Genres): Promise<any> => {
         });
       });
     }
-    console.log(vids);
     return vids;
   } catch (err) {
     console.error(err);
@@ -380,14 +485,184 @@ export const countView = async (vid: string) => {
   }
 }
 
-export const likeVideo = async (vid: string) => {
+export const updateVideoLikes = async (vid: string, increment: boolean) => {
+  try {
+    if (increment) {
+      const query = {
+        text: 'UPDATE videos SET likes = likes + 1 WHERE vid = $1 RETURNING likes;',
+        values: [vid]
+      }
+      const { rows } = await client.query(query);
+      return rows[0];
+    } else {
+      const query = {
+        text: 'UPDATE videos SET likes = likes - 1 WHERE vid = $1 RETURNING likes;',
+        values: [vid]
+      }
+      const { rows } = await client.query(query);
+      return rows[0];
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+export const updateVideoDislikes = async (vid: string, increment: boolean) => {
+  try {
+    if (increment) {
+      const query = {
+        text: 'UPDATE videos SET dislikes = dislikes + 1 WHERE vid = $1 RETURNING likes;',
+        values: [vid]
+      }
+      const { rows } = await client.query(query);
+      return rows[0];
+    } else {
+      const query = {
+        text: 'UPDATE videos SET dislikes = dislikes - 1 WHERE vid = $1 RETURNING likes;',
+        values: [vid]
+      }
+      const { rows } = await client.query(query);
+      return rows[0];
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+export const addComment = async (comment: Comment) => {
   try {
     const query = {
-      text: 'UPDATE videos SET likes = likes + 1 WHERE vid = $1 RETURNING likes;',
-      values: [vid]
+      text: `INSERT INTO comments(vid, uid, username, comment, likes, dislikes, timestamp) 
+      VALUES('${comment.vid}', '${comment.uid}', '${comment.username}', '${comment.comment}', 0, 0, '${new Date().toUTCString()}') 
+      RETURNING cid;`
     }
     const { rows } = await client.query(query);
     return rows[0];
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+export const getComments = async (vid: string) => {
+  try {
+    const query = {
+      text: 'SELECT * FROM comments WHERE vid = $1',
+      values: [vid]
+    }
+    const { rows } = await client.query(query);
+    return rows;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+export const updateCommentLike = async (cid: string, uid: string, increment: boolean) => {
+  try {
+    console.log(cid, uid, increment);
+    let entryExists = false;
+    // Check if comment is already liked
+    const ratingQuery = {
+      text: `SELECT * FROM comment_rated WHERE cid = '${cid}' AND uid = '${uid}';`,
+    }
+    const { rows } = await client.query(ratingQuery);
+    console.log(rows);
+    if (rows.length !== 0) {
+      if (rows[0].liked === 'true' || rows[0].disliked === 'true') return;
+      entryExists = true;
+    }
+
+    if (increment) {
+      // Update comment_rated table
+      if (entryExists) {
+        const query = {
+          text: `UPDATE comment_rated SET liked = true WHERE cid = '${cid}' AND uid = '${uid}';`,
+        }
+        await client.query(query);
+      } else {
+        const query = {
+          text: `INSERT INTO comment_rated(cid, uid, liked, disliked) VALUES('${cid}', '${uid}', true, false);`,
+        }
+        await client.query(query);
+      }
+      // Update comment table
+      const commentQuery = {
+        text: `UPDATE comments SET likes = likes + 1 WHERE cid = '${cid}' AND uid = '${uid}';`,
+      }
+      await client.query(commentQuery);
+    } else {
+      // Update comment_rated Table
+      if (entryExists) {
+        const query = {
+          text: `UPDATE comment_rated SET liked = false WHERE cid = '${cid}' AND uid = '${uid}';`,
+        }
+        await client.query(query);
+      } else {
+        const query = {
+          text: `INSERT INTO comment_rated(cid, uid, liked, disliked) VALUES('${cid}', '${uid}', false, false);`,
+        }
+        await client.query(query);
+      }
+      // Update comment table
+      const commentQuery = {
+        text: `UPDATE comments SET likes = likes - 1 WHERE cid = '${cid}' AND uid = '${uid}';`,
+      }
+      await client.query(commentQuery);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+export const updateCommentDislike = async (cid: string, uid: string, increment: boolean) => {
+  try {
+    let entryExists = false;
+    // Check if comment is already liked
+    const ratingQuery = {
+      text: `SELECT disliked FROM comment_rated WHERE cid = '${cid}' AND uid = '${uid}';`,
+    }
+    const { rows } = await client.query(ratingQuery);
+    if (rows.length !== 0) {
+      if (rows[0].disliked === 'true' || rows[0].disliked === 'true') return;
+      entryExists = true;
+    }
+
+    if (increment) {
+      // Update comment_rated Table
+      if (entryExists) {
+        const query = {
+          text: `UPDATE comment_rated SET disliked = true WHERE cid = '${cid}' AND uid = '${uid}';`,
+        }
+        await client.query(query);
+      } else {
+        const query = {
+          text: `INSERT INTO comment_rated(cid, uid, liked, disliked) VALUES('${cid}', '${uid}', false, true);`,
+        }
+        await client.query(query);
+      }
+      // Update comment table
+      const commentQuery = {
+        text: `UPDATE comments SET dislikes = dislikes + 1 WHERE cid = '${cid}' AND uid = '${uid}';`,
+      }
+      await client.query(commentQuery);
+    } else {
+      // Update comment_rated Table
+      if (entryExists) {
+        const query = {
+          text: `UPDATE comment_rated SET disliked = false WHERE cid = '${cid}' AND uid = '${uid}';`,
+        }
+        await client.query(query);
+      } else {
+        const query = {
+          text: `INSERT INTO comment_rated(cid, uid, liked, disliked) VALUES('${cid}', '${uid}', false, false);`,
+        }
+        await client.query(query);
+      }
+      // Update comment table
+      const commentQuery = {
+        text: `UPDATE comments SET dislikes = dislikes - 1 WHERE cid = '${cid}' AND uid = '${uid}';`,
+      }
+      await client.query(commentQuery);
+    }
   } catch (err) {
     console.error(err);
   }
