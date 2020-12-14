@@ -86,7 +86,7 @@ const MovieRows = ({ category, setActive, setMetadata }) => {
       vid: metadata.vid,
       title: metadata.title,
       description: metadata.description,
-      length: metadata.length,
+      length: metadata.filmlength,
       likes: metadata.likes,
       dislikes: metadata.dislikes,
       views: metadata.views,
