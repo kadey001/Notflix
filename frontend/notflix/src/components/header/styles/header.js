@@ -5,7 +5,7 @@ export const Background = styled.div`
   display: flex;
   flex-direction: column;
   background: url(${({ src }) =>
-      src ? `../images/misc/${src}.jpg` : "../images/misc/home.jpg"})
+    src ? `../images/misc/${src}.jpg` : "../images/misc/home.jpg"})
     top left/ cover no-repeat;
 `;
 

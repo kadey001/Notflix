@@ -1,8 +1,5 @@
 import React, { Fragment, useState, useEffect } from "react";
-import Rows from "../components/movieRows/movieRows";
-import Footer from "../components/footer/footer";
-import CardDetails from "../components/cardDetails/cardDetails";
-import BrowseHeader from "../components/browseHeader/browseHeader";
+import axios from 'axios';
 import HeaderJumbotron from "../components/headerJumbotron/headerJumbotron";
 import { Global, css } from "@emotion/react";
 import PlayerHeader from "../components/playerHeader/playerHeader";
@@ -10,12 +7,39 @@ import { Form } from "../components";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
+async function addVideo(uploadData, videoFile, thumbnailFile) {
+  console.log(videoFile, thumbnailFile);
+  const formData = new FormData();
+  formData.append("video", videoFile);
+  formData.append("thumbnail", thumbnailFile);
+  formData.append("title", uploadData.title);
+  formData.append("description", uploadData.description);
+  formData.append("length", uploadData.length);
+  formData.append("released", uploadData.released.toUTCString());
+  formData.append("comedy", uploadData.comedy);
+  formData.append("horror", uploadData.horror);
+  formData.append("action", uploadData.action);
+  formData.append("drama", uploadData.drama);
+  formData.append("fantasy", uploadData.fantasy);
+  const config = {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  };
+  return await axios.post(
+    "http://13.77.174.221:3001/video/add-movie",
+    formData,
+    config
+  );
+}
+
 export default function Upload() {
-  const [genre, setGenre] = useState("");
-  const [selectedOption, setSelectedOption] = useState([]);
   const [startDate, setStartDate] = useState("");
-  const [file, setFile] = useState([]);
-  const [fileName, setFileName] = useState("Choose a file");
+  const [videoFile, setvideoFile] = useState([]);
+  const [thumbnailFile, setThumbnailFile] = useState([]);
+  const [videoFileName, setVideoFileName] = useState("Choose a video");
+  const [thumbnailFileName, setThumbnailFileName] = useState("Choose a thumbnail");
+  const [toggleSubmitButton, setToggleSubmitButton] = useState(true);
 
   const [uploadData, setUploadData] = useState({
     title: "",
@@ -29,11 +53,10 @@ export default function Upload() {
     fantasy: false,
   });
 
-  console.log(genre);
   console.log(startDate);
   console.log(uploadData);
-  console.log(file);
-  console.log(fileName);
+  console.log(videoFile);
+  console.log(thumbnailFile);
 
   const [error, setError] = useState("");
 
@@ -45,15 +68,15 @@ export default function Upload() {
 
   const handleUpload = (event) => {
     event.preventDefault();
-    const formData = new FormData();
-  };
-
-  const handleChange = (selectedOption) => {
-    setSelectedOption({ selectedOption });
-    if (selectedOption == "comedy") {
-      setUploadData({ comedy: true });
-      console.log(uploadData.comedy);
-    }
+    // Disable submit button so only one req is sent.
+    addVideo(uploadData, videoFile, thumbnailFile).then((result) => {
+      console.log(result);
+    }).catch((err) => {
+      if (err.response)
+        setError(err.response.statusText);
+      else
+        setError(err.message);
+    });
   };
 
   const onChangeComedy = () => {
@@ -90,13 +113,16 @@ export default function Upload() {
       fantasy: !initialState.fantasy,
     }));
   };
-  const handleDateChange = (date) => {
-    setStartDate(date);
+
+  const onVideoChange = (e) => {
+    setvideoFile(e.target.files[0]);
+    setVideoFileName(e.target.files[0].name);
   };
-  const onChange = (e) => {
-    setFile(e.target.files[0]);
-    setFileName(e.target.files[0].name);
-  };
+
+  const onThumbnailChange = (e) => {
+    setThumbnailFile(e.target.files[0]);
+    setThumbnailFileName(e.target.files[0].name);
+  }
   return (
     <>
       <Global styles={GlobalCSS} />
@@ -108,8 +134,12 @@ export default function Upload() {
 
         <Form.Base onSubmit={handleUpload} method="POST">
           <div className="upload-btn-wrapper">
-            <button className="btn">{fileName}</button>
-            <input type="file" name="myfile" onChange={onChange} />
+            <button className="btn">{videoFileName}</button>
+            <input type="file" accept="video/mp4" name="myfile" onChange={onVideoChange} />
+          </div>
+          <div className="upload-btn-wrapper">
+            <button className="btn">{thumbnailFileName}</button>
+            <input type="file" accept="image/*" name="myfile" onChange={onThumbnailChange} />
           </div>
           <Form.Input
             placeholder="Title"
@@ -127,7 +157,7 @@ export default function Upload() {
           />
           <Form.Input
             type="number"
-            placeholder="Length"
+            placeholder="Length (minutes)"
             value={uploadData.length}
             onChange={({ target }) =>
               setUploadData({ ...uploadData, length: target.value })

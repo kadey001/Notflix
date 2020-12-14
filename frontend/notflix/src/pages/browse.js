@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Rows from "../components/movieRows/movieRows";
 import Footer from "../components/footer/footer";
 import CardDetails from "../components/cardDetails/cardDetails";
@@ -6,14 +6,35 @@ import BrowseHeader from "../components/browseHeader/browseHeader";
 import HeaderJumbotron from "../components/headerJumbotron/headerJumbotron";
 import { Global, css } from "@emotion/react";
 
-const categories = ["Comedy", "Horror", "Action", "Drama", "Fantasy"];
+import { AuthContext } from "../context/auth";
+import { VideoContext } from "../context/video";
+import { Redirect } from "react-router-dom";
+import { getList, getLiked } from "../components/api/videos";
+
+const categories = [
+  "Top",
+  "List",
+  "Comedy",
+  "Horror",
+  "Action",
+  "Drama",
+  "Fantasy",
+  "Documentary",
+];
 const initialRow = {
   category: "",
   pos: { top: 0, bottom: 0 },
 };
 export default function Browse() {
   const [activeRow, setActiveRow] = useState(initialRow);
-  const [genre, setGenre] = useState([]);
+  const [metadata, setMetadata] = useState({
+    title: "Title",
+    description: "Desc",
+    length: "20 mins",
+    rating: 50,
+  });
+  const auth = useContext(AuthContext);
+  const { state, dispatch } = useContext(VideoContext);
 
   const {
     category,
@@ -32,17 +53,62 @@ export default function Browse() {
     });
   }, [category]);
 
+  useEffect(() => {
+    console.log("State: ", state);
+    // Update listed vids + liked vids
+    getList(auth.state.uid)
+      .then((result) => {
+        console.log(result);
+        dispatch({
+          type: "UPDATE",
+          payload: {
+            listedVideos: result.data,
+            likedVideos: state.likedVideos,
+          },
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+    getLiked(auth.state.uid).then((result) => {
+      console.log(result);
+      dispatch({
+        type: "UPDATE",
+        payload: {
+          likedVideos: result.data,
+          listedVideos: state.listedVideos,
+        },
+      });
+    });
+  }, []);
+
   return (
-    <>
-      <Global styles={GlobalCSS} />
-      <BrowseHeader />
-      <HeaderJumbotron />
-      {categories.slice(0).map((category) => (
-        <Rows key={category} category={category} setActive={setActive} />
-      ))}
-      <CardDetails category={category} pos={bottom} setActive={setActive} />
-      <Footer />
-    </>
+    <div>
+      {auth.state.isAuthenticated ? (
+        <>
+          <Global styles={GlobalCSS} />
+          <BrowseHeader />
+          <HeaderJumbotron />
+          {categories.slice(0).map((category) => (
+            <Rows
+              key={category}
+              category={category}
+              setActive={setActive}
+              setMetadata={setMetadata}
+            />
+          ))}
+          <CardDetails
+            category={category}
+            pos={bottom}
+            setActive={setActive}
+            metadata={metadata}
+          />
+          <Footer />
+        </>
+      ) : (
+        <Redirect to="/" />
+      )}
+    </div>
   );
 }
 const GlobalCSS = css`

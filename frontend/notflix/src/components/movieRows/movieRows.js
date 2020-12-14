@@ -1,72 +1,99 @@
 /** @jsx jsx */
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useContext } from "react";
 //import { css } from "@emotion/core";
 import { css, jsx } from "@emotion/react";
 import styled from "@emotion/styled";
 import Icon from "../../components/Icon/Icon";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useHistory, useParams, Link } from "react-router-dom";
+import { useHistory } from "react-router-dom";
+import { getGenre, getTop } from "../api/videos";
 import axios from "axios";
-import CardDetails from "../../components/cardDetails/cardDetails";
-import Overview from "../../components/cardDetails/overview";
+import { VideoContext } from "../../context/video";
 
-import one from "../../img/one.jpg";
-import two from "../../img/two.jpg";
-import three from "../../img/three.jpg";
-import four from "../../img/four.jpg";
-import five from "../../img/five.jpg";
-import six from "../../img/six.jpg";
+const setGenres = (category) => {
+  const genres = {
+    comedy: false,
+    horror: false,
+    action: false,
+    drama: false,
+    fantasy: false,
+    documentary: false,
+  };
+  switch (category) {
+    case "Comedy":
+      genres.comedy = true;
+      break;
+    case "Horror":
+      genres.horror = true;
+      break;
+    case "Action":
+      genres.action = true;
+      break;
+    case "Drama":
+      genres.drama = true;
+      break;
+    case "Fantasy":
+      genres.fantasy = true;
+      break;
+    case "Documentary":
+      genres.documentary = true;
+      break;
+  }
+  return genres;
+};
 
-const content = [one, two, three, four, five, six];
-
-const MovieRows = ({
-  category,
-  setActive,
-  title,
-  description,
-  length,
-  rating,
-}) => {
-  const [hovered, setHovered] = useState(false);
+const MovieRows = ({ category, setActive, setMetadata }) => {
   const history = useHistory();
-  const [movies, setMovies] = useState([
-    {
-      vid: "5186eb59-bed7-4de0-ba7c-5f6ffbc5ae95",
-      thumbnailURL: one,
-      title: "Rats 1",
-      description: "A movie about even more Rats.",
-      length: 10,
-      released: Date,
-      comedy: true,
-      horror: true,
-      action: true,
-      drama: false,
-      fantasy: true,
-    },
-    {
-      vid: "5186eb59-bed7-4de0-ba7c-5f6ffbc5ae96",
-      thumbnailURL: two,
-      title: "Rats 2",
-      description: "A movie about even more Rats.",
-      length: 20,
-      released: Date,
-      comedy: false,
-      horror: true,
-      action: true,
-      drama: false,
-      fantasy: true,
-    },
-  ]);
+  const { state } = useContext(VideoContext);
+  const [hovered, setHovered] = useState(false);
+  const [movies, setMovies] = useState([]);
 
   useEffect(() => {
-    async function fetchData() {
-      const request = await axios.get("");
-      console.table(request.data.results);
-      setMovies(request.data.results);
-      return request;
+    switch (category) {
+      case "Top":
+        getTop()
+          .then((result) => {
+            console.log("Top Results: ", result);
+            setMovies(result.data);
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+        break;
+      case "List":
+        const listedVideos = state.listedVideos;
+        if (!listedVideos) return;
+        setMovies(listedVideos);
+        break;
+      default:
+        const genres = setGenres(category);
+        getGenre(genres)
+          .then((result) => {
+            console.log(result.data);
+            setMovies(result.data);
+          })
+          .catch((err) => {
+            if (axios.isCancel(err)) {
+            } else {
+              throw err;
+            }
+          });
     }
-    fetchData();
   }, []);
+
+  const openCard = (metadata) => {
+    console.log("Metadata: ", metadata);
+    setMetadata({
+      vid: metadata.vid,
+      title: metadata.title,
+      description: metadata.description,
+      length: metadata.length,
+      likes: metadata.likes,
+      dislikes: metadata.dislikes,
+      views: metadata.views,
+      genres: metadata.genres,
+      img: metadata.img,
+    });
+  };
 
   const handleHover = useCallback((e) => {
     e.type === "mouseenter"
@@ -112,26 +139,30 @@ const MovieRows = ({
             }
           `}
         >
-          {movies.map((image) => (
+          {movies.map((video) => (
             <ContentCard
-              key={image.vid}
-              data-img={image.thumbnailURL}
+              key={video.vid}
+              data-img={video.img}
               onMouseEnter={handleHover}
               onMouseLeave={handleHover}
             >
-              {image.thumbnailURL === hovered && (
+              {video.img === hovered && (
                 <div className="content">
                   <Icon
                     type="play"
-                    onClick={({ target }) =>
-                      history.push(`/watch/${image.vid}`)
-                    }
+                    onClick={() => history.push(`/watch/${video.vid}`)}
                   />
-                  <Icon type="info-circle" onClick={getPos} />
+                  <Icon
+                    type="info-circle"
+                    onClick={(e) => {
+                      getPos(e);
+                      openCard(video);
+                    }}
+                  />
                   <Icon type="thumbs-up" />
                 </div>
               )}
-              <img src={image.thumbnailURL} />
+              <img src={video.img} />
             </ContentCard>
           ))}
         </div>
