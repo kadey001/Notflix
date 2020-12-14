@@ -39,7 +39,7 @@ export default function Upload() {
   const [thumbnailFile, setThumbnailFile] = useState([]);
   const [videoFileName, setVideoFileName] = useState("Choose a video");
   const [thumbnailFileName, setThumbnailFileName] = useState("Choose a thumbnail");
-  const [toggleSubmitButton, setToggleSubmitButton] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const [uploadData, setUploadData] = useState({
     title: "",
@@ -68,14 +68,17 @@ export default function Upload() {
 
   const handleUpload = (event) => {
     event.preventDefault();
+    setLoading(true);
     // Disable submit button so only one req is sent.
     addVideo(uploadData, videoFile, thumbnailFile).then((result) => {
       console.log(result);
+      setLoading(false);
     }).catch((err) => {
       if (err.response)
         setError(err.response.statusText);
       else
         setError(err.message);
+      setLoading(false);
     });
   };
 
@@ -229,7 +232,7 @@ export default function Upload() {
             </label>
           </div>
 
-          <Form.Submit disabled={isInvalid} type="submit">
+          <Form.Submit disabled={isInvalid || loading} type="submit">
             Upload
           </Form.Submit>
         </Form.Base>
