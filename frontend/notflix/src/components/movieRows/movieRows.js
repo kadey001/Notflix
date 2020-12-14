@@ -1,12 +1,13 @@
 /** @jsx jsx */
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useContext } from "react";
 //import { css } from "@emotion/core";
 import { css, jsx } from "@emotion/react";
 import styled from "@emotion/styled";
 import Icon from "../../components/Icon/Icon";
 import { useHistory } from "react-router-dom";
-import { getGenre } from '../api/videos';
+import { getGenre, getTop } from '../api/videos';
 import axios from 'axios';
+import { VideoContext } from "../../context/video";
 
 const setGenres = (category) => {
   const genres = {
@@ -39,25 +40,39 @@ const MovieRows = ({
   setActive,
   setMetadata
 }) => {
-  const [hovered, setHovered] = useState(false);
   const history = useHistory();
-  const [movies, setMovies] = useState([{}]);
+  const { state } = useContext(VideoContext);
+  const [hovered, setHovered] = useState(false);
+  const [movies, setMovies] = useState([]);
 
   useEffect(() => {
-    const genres = setGenres(category);
-    getGenre(genres).then((result) => {
-      console.log(result.data);
-      setMovies(result.data);
-    }).catch((err) => {
-      if (axios.isCancel(err)) {
-      } else {
-        throw err
-      }
-    });
+    switch (category) {
+      case ('Top'):
+        break;
+      case ('List'):
+        console.log('LIST DATA', state.listedVideos);
+        const listedVideos = state.listedVideos;
+        if (!listedVideos) return;
+        setMovies(listedVideos, () => {
+          console.log('Movies: ', movies);
+        });
+        break;
+      default:
+        const genres = setGenres(category);
+        getGenre(genres).then((result) => {
+          console.log(result.data);
+          setMovies(result.data);
+        }).catch((err) => {
+          if (axios.isCancel(err)) {
+          } else {
+            throw err
+          }
+        });
+    }
   }, []);
 
   const openCard = (metadata) => {
-    console.log(metadata);
+    console.log("Metadata: ", metadata);
     setMetadata({
       vid: metadata.vid,
       title: metadata.title,
@@ -67,6 +82,7 @@ const MovieRows = ({
       dislikes: metadata.dislikes,
       views: metadata.views,
       genres: metadata.genres,
+      img: metadata.img
     });
   }
 
@@ -114,31 +130,33 @@ const MovieRows = ({
             }
           `}
         >
-          {movies.map((video) => (
-            <ContentCard
-              key={video.vid}
-              data-img={video.img}
-              onMouseEnter={handleHover}
-              onMouseLeave={handleHover}
-            >
-              {video.img === hovered && (
-                <div className="content">
-                  <Icon
-                    type="play"
-                    onClick={() =>
-                      history.push(`/watch/${video.vid}`)
-                    }
-                  />
-                  <Icon type="info-circle" onClick={(e) => {
-                    getPos(e);
-                    openCard(video);
-                  }} />
-                  <Icon type="thumbs-up" />
-                </div>
-              )}
-              <img src={video.img} />
-            </ContentCard>
-          ))}
+          {movies.map((video) => {
+            console.log(category, video); return (
+              <ContentCard
+                key={video.vid}
+                data-img={video.img}
+                onMouseEnter={handleHover}
+                onMouseLeave={handleHover}
+              >
+                {video.img === hovered && (
+                  <div className="content">
+                    <Icon
+                      type="play"
+                      onClick={() =>
+                        history.push(`/watch/${video.vid}`)
+                      }
+                    />
+                    <Icon type="info-circle" onClick={(e) => {
+                      getPos(e);
+                      openCard(video);
+                    }} />
+                    <Icon type="thumbs-up" />
+                  </div>
+                )}
+                <img src={video.img} />
+              </ContentCard>
+            )
+          })}
         </div>
       </div>
     </div>

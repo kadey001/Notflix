@@ -7,9 +7,11 @@ import HeaderJumbotron from "../components/headerJumbotron/headerJumbotron";
 import { Global, css } from "@emotion/react";
 
 import { AuthContext } from '../context/auth';
+import { VideoContext } from '../context/video';
 import { Redirect } from "react-router-dom";
+import { getList, getLiked } from "../components/api/videos";
 
-const categories = ["Top", "liked", "Comedy", "Horror", "Action", "Drama", "Fantasy", "Documentary"];
+const categories = ["Top", "List", "Comedy", "Horror", "Action", "Drama", "Fantasy", "Documentary"];
 const initialRow = {
   category: "",
   pos: { top: 0, bottom: 0 },
@@ -22,7 +24,8 @@ export default function Browse() {
     length: '20 mins',
     rating: 50
   });
-  const { state } = React.useContext(AuthContext);
+  const auth = useContext(AuthContext);
+  const { state, dispatch } = useContext(VideoContext);
 
   const {
     category,
@@ -41,8 +44,35 @@ export default function Browse() {
     });
   }, [category]);
 
+  useEffect(() => {
+    console.log("State: ", state);
+    // Update listed vids + liked vids
+    getList(auth.state.uid).then((result) => {
+      console.log(result);
+      dispatch({
+        type: "UPDATE",
+        payload: {
+          listedVideos: result.data,
+          likedVideos: state.likedVideos
+        }
+      });
+    }).catch((err) => {
+      console.error(err);
+    });
+    getLiked(auth.state.uid).then((result) => {
+      console.log(result);
+      dispatch({
+        type: "UPDATE",
+        payload: {
+          likedVideos: result.data,
+          listedVideos: state.listedVideos
+        }
+      })
+    })
+  }, [])
+
   return (
-    <div>{state.isAuthenticated ?
+    <div>{auth.state.isAuthenticated ?
       <>
         <Global styles={GlobalCSS} />
         <BrowseHeader />
