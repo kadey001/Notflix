@@ -12,12 +12,30 @@ import { addToList, removeFromList } from "../api/videos";
  */
 const Overview = (props) => {
   const [inList, setInList] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingLike, setLoadingLike] = useState(false);
   const history = useHistory();
   const auth = useContext(AuthContext);
   const video = useContext(VideoContext);
   console.log("Props: ", props);
   console.log("Video State: ", video.state);
+
+  const likeClick = (e) => {
+    e.preventDefault();
+    likeClick(auth.state.uid, props.metadata.vid).then((result) => {
+      setIsLiked(true);
+      setLoadingLike(false);
+    });
+  };
+  const removeLikeClick = (e) => {
+    e.preventDefault();
+    removeLikeClick(auth.state.uid, props.metadata.vid).then((result) => {
+      setIsLiked(false);
+      setLoadingLike(false);
+    });
+  };
+
   const addList = (e) => {
     e.preventDefault();
     setLoading(true);
@@ -103,6 +121,15 @@ const Overview = (props) => {
       ) : (
         <Button disabled={loading} onClick={addList}>
           {loading ? <>Loading...</> : <>Add to List</>}
+        </Button>
+      )}
+      {isLiked ? (
+        <Button disabled={loadingLike} onClick={removeLikeClick}>
+          {loadingLike ? <>Loading...</> : <>Remove Like</>}
+        </Button>
+      ) : (
+        <Button disabled={loadingLike} onClick={likeClick}>
+          {loadingLike ? <>Loading...</> : <>Like</>}
         </Button>
       )}
     </div>

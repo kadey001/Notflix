@@ -159,7 +159,6 @@ const MovieRows = ({ category, setActive, setMetadata }) => {
                       openCard(video);
                     }}
                   />
-                  <Icon type="thumbs-up" />
                 </div>
               )}
               <img src={video.img} />
