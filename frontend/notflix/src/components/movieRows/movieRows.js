@@ -48,14 +48,17 @@ const MovieRows = ({
   useEffect(() => {
     switch (category) {
       case ('Top'):
+        getTop().then((result) => {
+          console.log('Top Results: ', result);
+          setMovies(result.data);
+        }).catch((err) => {
+          console.error(err);
+        })
         break;
       case ('List'):
-        console.log('LIST DATA', state.listedVideos);
         const listedVideos = state.listedVideos;
         if (!listedVideos) return;
-        setMovies(listedVideos, () => {
-          console.log('Movies: ', movies);
-        });
+        setMovies(listedVideos);
         break;
       default:
         const genres = setGenres(category);
@@ -130,33 +133,32 @@ const MovieRows = ({
             }
           `}
         >
-          {movies.map((video) => {
-            console.log(category, video); return (
-              <ContentCard
-                key={video.vid}
-                data-img={video.img}
-                onMouseEnter={handleHover}
-                onMouseLeave={handleHover}
-              >
-                {video.img === hovered && (
-                  <div className="content">
-                    <Icon
-                      type="play"
-                      onClick={() =>
-                        history.push(`/watch/${video.vid}`)
-                      }
-                    />
-                    <Icon type="info-circle" onClick={(e) => {
-                      getPos(e);
-                      openCard(video);
-                    }} />
-                    <Icon type="thumbs-up" />
-                  </div>
-                )}
-                <img src={video.img} />
-              </ContentCard>
-            )
-          })}
+          {movies.map((video) => (
+            <ContentCard
+              key={video.vid}
+              data-img={video.img}
+              onMouseEnter={handleHover}
+              onMouseLeave={handleHover}
+            >
+              {video.img === hovered && (
+                <div className="content">
+                  <Icon
+                    type="play"
+                    onClick={() =>
+                      history.push(`/watch/${video.vid}`)
+                    }
+                  />
+                  <Icon type="info-circle" onClick={(e) => {
+                    getPos(e);
+                    openCard(video);
+                  }} />
+                  <Icon type="thumbs-up" />
+                </div>
+              )}
+              <img src={video.img} />
+            </ContentCard>
+          )
+          )}
         </div>
       </div>
     </div>

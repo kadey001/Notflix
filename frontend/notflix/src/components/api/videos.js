@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const getTop = () => {
-  return axios.get('http://13.77.174.221:3001/videos/top-videos');
+  return axios.get('http://13.77.174.221:3001/video/top-videos');
 }
 
 // genres is object of booleans
@@ -26,7 +26,7 @@ export const searchVideos = (keyword) => {
     },
   };
   return axios.post(
-    'http://13.77.174.221:3001/videos/filter-genre',
+    'http://13.77.174.221:3001/video/filter-genre',
     {
       keyword: keyword
     },
@@ -35,7 +35,7 @@ export const searchVideos = (keyword) => {
 }
 
 export const countView = (vid) => {
-  return axios.get(`http://13.77.174.221:3001/videos/filter-genre?${vid}`);
+  return axios.get(`http://13.77.174.221:3001/video/filter-genre?${vid}`);
 }
 
 export const addToList = (uid, vid) => {
