@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useLocation } from 'react-router-dom';
 import { Header } from "../components";
 import * as ROUTES from "../constants/routes";
 
 export function HeaderContainer({ children }) {
+  const location = useLocation();
   return (
     <Header>
       <Header.Frame>
@@ -11,7 +13,11 @@ export function HeaderContainer({ children }) {
           src={"images/logo/logo.png"}
           alt="Notflix"
         />
-        <Header.ButtonLink to={ROUTES.SIGN_IN}>Sign In</Header.ButtonLink>
+        {location.pathname === '/signin' ?
+          <Header.ButtonLink to={ROUTES.SIGN_UP}>Signup</Header.ButtonLink>
+          :
+          <Header.ButtonLink to={ROUTES.SIGN_IN}>Sign In</Header.ButtonLink>
+        }
       </Header.Frame>
       {children}
     </Header>
