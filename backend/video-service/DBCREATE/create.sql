@@ -38,3 +38,33 @@ CREATE TABLE genres (
     PRIMARY KEY(vid),
     FOREIGN KEY(vid) REFERENCES video(vid)
 );
+
+CREATE TABLE comments (
+	cid uuid DEFAULT uuid_generate_v4() NOT NULL,
+	vid uuid,
+	uid uuid,
+	username TEXT,
+	comment TEXT,
+	timestamp TIMESTAMP,
+	likes INT,
+	dislikes INT,
+	CONSTRAINT fk_videos
+		FOREIGN KEY(vid)
+			REFERENCES videos(vid),
+	CONSTRAINT fk_users CONTRAINT
+		FOREIGN KEY(uid)
+			REFERENCES users(uid)
+);
+
+CREATE TABLE comment_rated (
+    cid uuid,
+    uid uuid,
+    liked boolean,
+    disliked boolean,
+    CONSTRAINT fk_comments
+        FOREIGN KEY(cid)
+            REFERENCES comments(cid),
+    CONSTRAINT fk_users
+        FOREIGN KEY(uid)
+			REFERENCES users(uid)
+);

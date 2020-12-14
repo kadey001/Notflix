@@ -5,8 +5,8 @@ import { css, jsx } from "@emotion/react";
 import styled from "@emotion/styled";
 import Icon from "../../components/Icon/Icon";
 import { useHistory } from "react-router-dom";
-import { getGenre, getTop } from '../api/videos';
-import axios from 'axios';
+import { getGenre, getTop } from "../api/videos";
+import axios from "axios";
 import { VideoContext } from "../../context/video";
 
 const setGenres = (category) => {
@@ -16,30 +16,32 @@ const setGenres = (category) => {
     action: false,
     drama: false,
     fantasy: false,
-    documentary: false
-  }
+    documentary: false,
+  };
   switch (category) {
-    case ('Comedy'):
-      genres.comedy = true; break;
-    case ('Horror'):
-      genres.horror = true; break;
-    case ('Action'):
-      genres.action = true; break;
-    case ('Drama'):
-      genres.drama = true; break;
-    case ('Fantasy'):
-      genres.fantasy = true; break;
-    case ('Documentary'):
-      genres.documentary = true; break;
+    case "Comedy":
+      genres.comedy = true;
+      break;
+    case "Horror":
+      genres.horror = true;
+      break;
+    case "Action":
+      genres.action = true;
+      break;
+    case "Drama":
+      genres.drama = true;
+      break;
+    case "Fantasy":
+      genres.fantasy = true;
+      break;
+    case "Documentary":
+      genres.documentary = true;
+      break;
   }
   return genres;
-}
+};
 
-const MovieRows = ({
-  category,
-  setActive,
-  setMetadata
-}) => {
+const MovieRows = ({ category, setActive, setMetadata }) => {
   const history = useHistory();
   const { state } = useContext(VideoContext);
   const [hovered, setHovered] = useState(false);
@@ -47,30 +49,34 @@ const MovieRows = ({
 
   useEffect(() => {
     switch (category) {
-      case ('Top'):
-        getTop().then((result) => {
-          console.log('Top Results: ', result);
-          setMovies(result.data);
-        }).catch((err) => {
-          console.error(err);
-        })
+      case "Top":
+        getTop()
+          .then((result) => {
+            console.log("Top Results: ", result);
+            setMovies(result.data);
+          })
+          .catch((err) => {
+            console.error(err);
+          });
         break;
-      case ('List'):
+      case "List":
         const listedVideos = state.listedVideos;
         if (!listedVideos) return;
         setMovies(listedVideos);
         break;
       default:
         const genres = setGenres(category);
-        getGenre(genres).then((result) => {
-          console.log(result.data);
-          setMovies(result.data);
-        }).catch((err) => {
-          if (axios.isCancel(err)) {
-          } else {
-            throw err
-          }
-        });
+        getGenre(genres)
+          .then((result) => {
+            console.log(result.data);
+            setMovies(result.data);
+          })
+          .catch((err) => {
+            if (axios.isCancel(err)) {
+            } else {
+              throw err;
+            }
+          });
     }
   }, []);
 
@@ -85,9 +91,9 @@ const MovieRows = ({
       dislikes: metadata.dislikes,
       views: metadata.views,
       genres: metadata.genres,
-      img: metadata.img
+      img: metadata.img,
     });
-  }
+  };
 
   const handleHover = useCallback((e) => {
     e.type === "mouseenter"
@@ -144,21 +150,21 @@ const MovieRows = ({
                 <div className="content">
                   <Icon
                     type="play"
-                    onClick={() =>
-                      history.push(`/watch/${video.vid}`)
-                    }
+                    onClick={() => history.push(`/watch/${video.vid}`)}
                   />
-                  <Icon type="info-circle" onClick={(e) => {
-                    getPos(e);
-                    openCard(video);
-                  }} />
+                  <Icon
+                    type="info-circle"
+                    onClick={(e) => {
+                      getPos(e);
+                      openCard(video);
+                    }}
+                  />
                   <Icon type="thumbs-up" />
                 </div>
               )}
               <img src={video.img} />
             </ContentCard>
-          )
-          )}
+          ))}
         </div>
       </div>
     </div>

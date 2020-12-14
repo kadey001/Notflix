@@ -1,4 +1,5 @@
 import json
+import requests
 from datetime import datetime
 import flask
 from flask import request, jsonify
@@ -93,7 +94,7 @@ def likeVideo(uid, profile, vid):
 
 
 def dislikeVideo(uid, profile, vid):
-    profile_path = f'/home/users/{uid}/profiles/{profile}'
+    profile_path = f'hdfs:///home/users/{uid}/profiles/{profile}'
     # Check if path exists
     path_exists = checkPath(profile_path)
     if (not path_exists):
@@ -132,7 +133,7 @@ def dislikeVideo(uid, profile, vid):
 
 
 def viewVideo(uid, profile, vid):
-    profile_path = f'/home/users/{uid}/profiles/{profile}'
+    profile_path = f'hdfs:///home/users/{uid}/profiles/{profile}'
     # Check if path exists
     path_exists = checkPath(profile_path)
     if (not path_exists):
@@ -179,7 +180,7 @@ def addToList(uid, profile, vid):
         return
     # Get Dataframe
     infoDF = spark.read.csv(f'{profile_path}/info.csv',
-                            header=True, inferSchema=True)
+                            header=True, schema=infoSchema)
     infoDF.show()
     infoDF.createOrReplaceTempView('info')
     # Get vid row
@@ -266,7 +267,7 @@ def removeFromList(uid, profile, vid):
 
 
 def getLikedVideos(uid, profile):
-    profile_path = f'/home/users/{uid}/profiles/{profile}'
+    profile_path = f'hdfs:///home/users/{uid}/profiles/{profile}'
     # Check if path exists
     path_exists = checkPath(profile_path)
     if (not path_exists):
@@ -284,7 +285,7 @@ def getLikedVideos(uid, profile):
 
 
 def getViewedVideos(uid, profile):
-    profile_path = f'/home/users/{uid}/profiles/{profile}'
+    profile_path = f'hdfs:///home/users/{uid}/profiles/{profile}'
     # Check if path exists
     path_exists = checkPath(profile_path)
     if (not path_exists):
@@ -302,7 +303,7 @@ def getViewedVideos(uid, profile):
 
 
 def getListedVideos(uid, profile):
-    profile_path = f'/home/users/{uid}/profiles/{profile}'
+    profile_path = f'hdfs:///home/users/{uid}/profiles/{profile}'
     # Check if path exists
     path_exists = checkPath(profile_path)
     if (not path_exists):
@@ -385,7 +386,7 @@ def view_video():
     return jsonify({'result': True})
 
 
-@app.route('/api/get-liked-videos', methods=['GET'])
+@app.route('/api/get-liked-videos', methods=['POST'])
 def get_liked_videos():
     # Expect record to contain uid and vid
     record = json.loads(request.data)
@@ -401,7 +402,7 @@ def get_liked_videos():
     return jsonify(results)
 
 
-@app.route('/api/get-viewed-videos', methods=['GET'])
+@app.route('/api/get-viewed-videos', methods=['POST'])
 def get_viewed_videos():
     # Expect record to contain uid and vid
     record = json.loads(request.data)
@@ -417,7 +418,7 @@ def get_viewed_videos():
     return jsonify(results)
 
 
-@app.route('/api/get-listed-videos', methods=['GET'])
+@app.route('/api/get-listed-videos', methods=['POST'])
 def get_listed_videos():
     # Expect record to contain uid and vid
     record = json.loads(request.data)
@@ -426,10 +427,10 @@ def get_listed_videos():
     vids = getListedVideos(uid, 'default')
     results = []
     for vid in vids:
-        result = dict()
-        result['vid'] = vid
-        result['url'] = f'http://13.77.174.221:9864/webhdfs/v1/home/videos/{vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0'
-        results.append(result)
+        result = requests.post(
+            'http://localhost:3001/video/metadata', {'vid': vid})
+        print(json.loads(result.content))
+        results.append(json.loads(result.content))
     return jsonify(results)
 
 

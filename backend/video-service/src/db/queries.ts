@@ -9,12 +9,12 @@ export interface Auth {
 }
 
 export interface Genres {
-  comedy: boolean,
-  horror: boolean,
-  action: boolean,
-  drama: boolean,
-  fantasy: boolean,
-  documentary: boolean,
+  comedy?: boolean,
+  horror?: boolean,
+  action?: boolean,
+  drama?: boolean,
+  fantasy?: boolean,
+  documentary?: boolean,
 };
 
 export interface MovieInfo extends Genres {
@@ -23,6 +23,28 @@ export interface MovieInfo extends Genres {
   length: string, // In minutes
   released: string
 };
+
+export interface MetaData {
+  vid: string;
+  img: string;
+  title: string;
+  description: string;
+  length: number;
+  released: Date;
+  likes: number;
+  dislikes: number;
+  views: number;
+  genres: Genres
+}
+
+export interface Comment {
+  uid: string;
+  vid: string;
+  username: string;
+  comment: string;
+  likes?: number;
+  dislikes?: number;
+}
 
 export const addFilm = async (movieInfo: MovieInfo): Promise<string | undefined> => {
   try {
@@ -71,11 +93,11 @@ export const checkExisting = async (email: string) => {      //Let user generate
 export const signUp = async (auth: Auth) => {
   try {
     const query = {
-      text: 'INSERT INTO users(username, email, password, token, created, plantype) VALUES($1, $2, $3, $4, $5, $6) RETURNING uid;',
+      text: 'INSERT INTO users(username, email, password, token, created, plantype) VALUES($1, $2, $3, $4, $5, $6) RETURNING uid, username, token;',
       values: [auth.username, auth.email, auth.password, auth.token, new Date(), 0]
     }
     const { rows } = await client.query(query);
-    return rows[0].uid;
+    return rows[0];
   } catch (err) {
     console.error(err);
   }
@@ -84,13 +106,11 @@ export const signUp = async (auth: Auth) => {
 export const signIn = async (auth: Auth) => {
   try {
     const query = {
-      text: 'SELECT username, password, token FROM users WHERE email = $1 RETURNING uid;',
+      text: 'SELECT uid, username, password, token FROM users WHERE email = $1',
       values: [auth.email]
     }
     const { rows } = await client.query(query);
-    console.log(rows);
-    const response = rows[0];
-    return response;
+    return rows[0];
   } catch (err) {
     console.error(err);
   }
@@ -110,18 +130,318 @@ export const updateUserToken = async (token: string, uid: string) => {
   }
 }
 
+
+// const comedyQuery = {
+//   text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+//         (SELECT vid FROM Genres WHERE comedy = $1);`,
+//   values: [genres.comedy]
+// };
+// const actionQuery = {
+//   text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+//         (SELECT vid FROM Genres WHERE action = $1);`,
+//   values: [genres.action]
+// };
+// const dramaQuery = {
+//   text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+//         (SELECT vid FROM Genres WHERE drama = $1);`,
+//   values: [genres.drama]
+// };
+// const fantasyQuery = {
+//   text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+//         (SELECT vid FROM Genres WHERE fantasy = $1);`,
+//   values: [genres.fantasy]
+// };
+// const horrorQuery = {
+//   text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+//         (SELECT vid FROM Genres WHERE horror = $1);`,
+//   values: [genres.horror]
+// };
+// const documentaryQuery = {
+//   text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+//         (SELECT vid FROM Genres WHERE documentary = $1);`,
+//   values: [genres.documentary]
+// };
+// const genreQueries = [
+//   client.query(comedyQuery),
+//   client.query(actionQuery),
+//   client.query(dramaQuery),
+//   client.query(fantasyQuery),
+//   client.query(horrorQuery),
+//   client.query(documentaryQuery)
+// ]
+// Promise.all(genreQueries).then((result) => {
+//   console.log(result);
+//   return result;
+// })
+
+const defaultGenres = {
+  comedy: false,
+  horror: false,
+  action: false,
+  drama: false,
+  fantasy: false,
+  documentary: false,
+}
+
+// TODO Update to just get all genres since we need all of them anyways 
+// export const getGenres = async () => {
+//   try {
+//     const vids: Array<MetaData> = [];
+//     const comedyQuery = {
+//       text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+//         (SELECT vid FROM Genres WHERE comedy = $1);`,
+//       values: [true]
+//     };
+//     const comedyResult = await client.query(comedyQuery);
+//     comedyResult.rows.forEach((video) => {
+//       vids.push({
+//         ...video,
+//         img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+//         genres: genres
+//       });
+//     });
+//     const actionQuery = {
+//       text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+//       (SELECT vid FROM Genres WHERE action = $1);`,
+//       values: [true]
+//     };
+//     const actionResult = await client.query(actionQuery);
+//     actionResult.rows.forEach((video) => {
+//       vids.push({
+//         ...video,
+//         img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+//         genres: { ...defaultGenres, action: true }
+//       });
+//     });
+//     const dramaQuery = {
+//       text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+//       (SELECT vid FROM Genres WHERE drama = $1);`,
+//       values: [true]
+//     };
+//     const dramaResult = await client.query(dramaQuery);
+//     dramaResult.rows.forEach((video) => {
+//       vids.push({
+//         ...video,
+//         img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+//         genres: { ...defaultGenres, drama: true }
+//       });
+//     });
+//     const fantasyQuery = {
+//       text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+//       (SELECT vid FROM Genres WHERE fantasy = $1);`,
+//       values: [true]
+//     };
+//     const fantasyResult = await client.query(fantasyQuery);
+//     fantasyResult.rows.forEach((video) => {
+//       vids.push({
+//         ...video,
+//         img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+//         genres: { ...defaultGenres, fantasy: true }
+//       });
+//     });
+//     const horrorQuery = {
+//       text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+//       (SELECT vid FROM Genres WHERE horror = $1);`,
+//       values: [true]
+//     };
+//     const horrorResult = await client.query(horrorQuery);
+//     horrorResult.rows.forEach((video) => {
+//       vids.push({
+//         ...video,
+//         img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+//         genres: { ...defaultGenres, horror: true }
+//       });
+//     });
+//     const documentaryQuery = {
+//       text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+//       (SELECT vid FROM Genres WHERE documentary = $1);`,
+//       values: [true]
+//     };
+//     const documentaryResult = await client.query(documentaryQuery);
+//     documentaryResult.rows.forEach((video) => {
+//       vids.push({
+//         ...video,
+//         img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+//         genres: { ...defaultGenres, documentary: true }
+//       });
+//     });
+//     return vids;
+//   } catch (err) {
+//     console.error(err);
+//   }
+// }
+
 export const filterGenre = async (genres: Genres): Promise<any> => {
   try {
+    const vids: Array<MetaData> = [];
+    if (genres.comedy) {
+      const comedyQuery = {
+        text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+          (SELECT vid FROM Genres WHERE comedy = $1);`,
+        values: [genres.comedy]
+      };
+      const comedyResult = await client.query(comedyQuery);
+      comedyResult.rows.forEach((video) => {
+        vids.push({
+          ...video,
+          img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+          genres: genres
+        });
+      });
+    }
+    if (genres.action) {
+      const actionQuery = {
+        text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+        (SELECT vid FROM Genres WHERE action = $1);`,
+        values: [genres.action]
+      };
+      const actionResult = await client.query(actionQuery);
+      actionResult.rows.forEach((video) => {
+        vids.push({
+          ...video,
+          img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+          genres: genres
+        });
+      });
+    }
+    if (genres.drama) {
+      const dramaQuery = {
+        text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+        (SELECT vid FROM Genres WHERE drama = $1);`,
+        values: [genres.drama]
+      };
+      const dramaResult = await client.query(dramaQuery);
+      dramaResult.rows.forEach((video) => {
+        vids.push({
+          ...video,
+          img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+          genres: genres
+        });
+      });
+    }
+    if (genres.fantasy) {
+      const fantasyQuery = {
+        text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+        (SELECT vid FROM Genres WHERE fantasy = $1);`,
+        values: [genres.fantasy]
+      };
+      const fantasyResult = await client.query(fantasyQuery);
+      fantasyResult.rows.forEach((video) => {
+        vids.push({
+          ...video,
+          img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+          genres: genres
+        });
+      });
+    }
+    if (genres.horror) {
+      const horrorQuery = {
+        text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+        (SELECT vid FROM Genres WHERE horror = $1);`,
+        values: [genres.horror]
+      };
+      const horrorResult = await client.query(horrorQuery);
+      horrorResult.rows.forEach((video) => {
+        vids.push({
+          ...video,
+          img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+          genres: genres
+        });
+      });
+    }
+    if (genres.documentary) {
+      const documentaryQuery = {
+        text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
+        (SELECT vid FROM Genres WHERE documentary = $1);`,
+        values: [genres.documentary]
+      };
+      const documentaryResult = await client.query(documentaryQuery);
+      documentaryResult.rows.forEach((video) => {
+        vids.push({
+          ...video,
+          img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+          genres: genres
+        });
+      });
+    }
+    return vids;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+//higherOrLower is true for higher, false for lower
+export const filterViews = async (desiredViews: number, higherOrLower: boolean): Promise<any> => {
+  try {
+    //filter by videos with a higher viewcount than specified by user in desiredViews
+    if (higherOrLower === true) {
+      const query = {
+        text: 'SELECT vid FROM videos WHERE views > $1 ORDER BY views;',
+        values: [desiredViews]
+      };
+      const { rows } = await client.query(query);
+      const vids: Set<string> = new Set();
+      rows.forEach((video) => {
+        vids.add(video.vid);
+      });
+      return vids;
+    }
+    //User wants to filter videos that have a lower viewcount than specified by user in desiredViews
+    else {
+      const query = {
+        text: 'SELECT vid FROM videos WHERE views < $1 ORDER BY views;',
+        values: [desiredViews]
+      };
+      const { rows } = await client.query(query);
+      const vids: Set<string> = new Set();
+      rows.forEach((video) => {
+        vids.add(video.vid);
+      });
+      return vids;
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+export const filterLikes = async (desiredLikes: number, higherOrLower: boolean): Promise<any> => {
+  try {
+    //filter by videos with a higher like count than specified by user in desiredLikes
+    if (higherOrLower === true) {
+      const query = {
+        text: 'SELECT title, likes FROM videos WHERE likes > $1 ORDER BY likes;',
+        values: [desiredLikes]
+      };
+      const { rows } = await client.query(query);
+      const vids: Set<string> = new Set();
+      rows.forEach((video) => {
+        vids.add(video.vid);
+      });
+      return vids;
+    }
+    //User wants to filter videos that have a lower viewcount than specified by user in desiredViews
+    else {
+      const query = {
+        text: 'SELECT title, likes FROM videos WHERE likes < $1 ORDER BY likes;',
+        values: [desiredLikes]
+      };
+      const { rows } = await client.query(query);
+      const vids: Set<string> = new Set();
+      rows.forEach((video) => {
+        vids.add(video.vid);
+      });
+      return vids;
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+export const filterKeyword = async (keyword: string): Promise<any> => {
+  try {
+    const queryText = `SELECT vid FROM Videos WHERE Videos.title LIKE \'%${keyword}\' OR Videos.title LIKE \'%${keyword}%\' OR Videos.title LIKE \'${keyword}%\'`;
     const query = {
-      text: `SELECT vid FROM videos WHERE vid IN 
-        (SELECT vid FROM Genres WHERE comedy = $1 AND horror = $2 AND action = $3 AND drama = $4 AND fantasy = $5 AND documentary = $6);`,
-      values: [genres.comedy,
-      genres.horror,
-      genres.action,
-      genres.drama,
-      genres.fantasy,
-      genres.documentary
-      ]
+      text: queryText,
     };
     const { rows } = await client.query(query);
     const vids: Set<string> = new Set();
@@ -134,101 +454,19 @@ export const filterGenre = async (genres: Genres): Promise<any> => {
   }
 };
 
-//higherOrLower is true for higher, false for lower
-export const filterViews = async (desiredViews: number, higherOrLower: boolean): Promise<void> => {
-  try {
-    //filter by videos with a higher viewcount than specified by user in desiredViews
-    if (higherOrLower === true) {
-      const query = {
-        text: 'SELECT title, views FROM videos WHERE views > $1 ORDER BY views;',
-        values: [desiredViews]
-      };
-      const result = await client.query(query);
-      console.log(result);
-    }
-    //User wants to filter videos that have a lower viewcount than specified by user in desiredViews
-    else {
-      const query = {
-        text: 'SELECT title, views FROM videos WHERE views < $1 ORDER BY views;',
-        values: [desiredViews]
-      };
-      const result = await client.query(query);
-      console.log(result);
-    }
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-export const filterLikes = async (desiredLikes: number, higherOrLower: boolean): Promise<void> => {
-  try {
-    //filter by videos with a higher like count than specified by user in desiredLikes
-    if (higherOrLower === true) {
-      const query = {
-        text: 'SELECT title, likes FROM videos WHERE likes > $1 ORDER BY likes;',
-        values: [desiredLikes]
-      };
-      const result = await client.query(query);
-      console.log(result);
-    }
-    //User wants to filter videos that have a lower viewcount than specified by user in desiredViews
-    else {
-      const query = {
-        text: 'SELECT title, likes FROM videos WHERE likes < $1 ORDER BY likes;',
-        values: [desiredLikes]
-      };
-      const result = await client.query(query);
-      console.log(result);
-    }
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-export const filterKeyword = async (keyword: string, GenreInfo: Genres): Promise<void> => {
-  try {
-    //Check if all Genres are false, means user wants to search across all Genres
-    let index = 0;
-    let searchGenre = false;
-    for (const genreType in GenreInfo) {
-      // @ts-ignore
-      if (GenreInfo[genreType] == true) {
-        searchGenre = true;
-      }
-    }
-    console.log("searchgenre is " + searchGenre);
-    //This is if user wants to search for titles and narrow even further via Genre
-    if (searchGenre == true) {
-      const query = {
-        text: 'SELECT Video.title FROM Video WHERE Video.title LIKE \'%\' || $1 || \'%\' AND vid IN (SELECT vid FROM Genres WHERE comedy = $2 AND horror = $3 AND action = $4 AND drama = $5 AND fantasy = $6 AND documentary = $7)',
-        values: [keyword, GenreInfo.comedy, GenreInfo.horror, GenreInfo.action, GenreInfo.drama, GenreInfo.fantasy, GenreInfo.documentary]
-      };
-      const result = await client.query(query);
-      console.log(result);
-    }
-    //User wants to search for titles across all Genres
-    else {
-      const query = {
-        text: 'SELECT Video.title FROM Video WHERE Video.title LIKE \'%\' || $1 || \'%\'',
-        values: [keyword]
-      };
-      const result = await client.query(query);
-      console.log(result);
-    }
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-export const topVids = async (desiredVideos: number): Promise<void> => {
+export const topVids = async (desiredVideos: number): Promise<any> => {
   try {
     //Could pull more information from videos than just title, just need to modify query
     const query = {
-      text: 'SELECT title, views FROM video ORDER BY views DESC LIMIT $2;',
+      text: 'SELECT vid FROM videos ORDER BY views DESC LIMIT $1;',
       values: [desiredVideos]
     };
-    const result = await client.query(query);
-    console.log(result);
+    const { rows } = await client.query(query);
+    const vids: Set<string> = new Set();
+    rows.forEach((video) => {
+      vids.add(video.vid);
+    });
+    return vids;
   } catch (err) {
     console.error(err);
   }
@@ -243,7 +481,190 @@ export const countView = async (vid: string) => {
     const { rows } = await client.query(query);
     return rows[0];
   } catch (err) {
+    console.error(err);
+  }
+}
 
+export const updateVideoLikes = async (vid: string, increment: boolean) => {
+  try {
+    if (increment) {
+      const query = {
+        text: 'UPDATE videos SET likes = likes + 1 WHERE vid = $1 RETURNING likes;',
+        values: [vid]
+      }
+      const { rows } = await client.query(query);
+      return rows[0];
+    } else {
+      const query = {
+        text: 'UPDATE videos SET likes = likes - 1 WHERE vid = $1 RETURNING likes;',
+        values: [vid]
+      }
+      const { rows } = await client.query(query);
+      return rows[0];
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+export const updateVideoDislikes = async (vid: string, increment: boolean) => {
+  try {
+    if (increment) {
+      const query = {
+        text: 'UPDATE videos SET dislikes = dislikes + 1 WHERE vid = $1 RETURNING likes;',
+        values: [vid]
+      }
+      const { rows } = await client.query(query);
+      return rows[0];
+    } else {
+      const query = {
+        text: 'UPDATE videos SET dislikes = dislikes - 1 WHERE vid = $1 RETURNING likes;',
+        values: [vid]
+      }
+      const { rows } = await client.query(query);
+      return rows[0];
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+export const addComment = async (comment: Comment) => {
+  try {
+    const query = {
+      text: `INSERT INTO comments(vid, uid, username, comment, likes, dislikes, timestamp) 
+      VALUES('${comment.vid}', '${comment.uid}', '${comment.username}', '${comment.comment}', 0, 0, '${new Date().toUTCString()}') 
+      RETURNING cid;`
+    }
+    const { rows } = await client.query(query);
+    return rows[0];
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+export const getComments = async (vid: string) => {
+  try {
+    const query = {
+      text: 'SELECT * FROM comments WHERE vid = $1',
+      values: [vid]
+    }
+    const { rows } = await client.query(query);
+    return rows;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+export const updateCommentLike = async (cid: string, uid: string, increment: boolean) => {
+  try {
+    console.log(cid, uid, increment);
+    let entryExists = false;
+    // Check if comment is already liked
+    const ratingQuery = {
+      text: `SELECT * FROM comment_rated WHERE cid = '${cid}' AND uid = '${uid}';`,
+    }
+    const { rows } = await client.query(ratingQuery);
+    console.log(rows);
+    if (rows.length !== 0) {
+      if (rows[0].liked === 'true' || rows[0].disliked === 'true') return;
+      entryExists = true;
+    }
+
+    if (increment) {
+      // Update comment_rated table
+      if (entryExists) {
+        const query = {
+          text: `UPDATE comment_rated SET liked = true WHERE cid = '${cid}' AND uid = '${uid}';`,
+        }
+        await client.query(query);
+      } else {
+        const query = {
+          text: `INSERT INTO comment_rated(cid, uid, liked, disliked) VALUES('${cid}', '${uid}', true, false);`,
+        }
+        await client.query(query);
+      }
+      // Update comment table
+      const commentQuery = {
+        text: `UPDATE comments SET likes = likes + 1 WHERE cid = '${cid}' AND uid = '${uid}';`,
+      }
+      await client.query(commentQuery);
+    } else {
+      // Update comment_rated Table
+      if (entryExists) {
+        const query = {
+          text: `UPDATE comment_rated SET liked = false WHERE cid = '${cid}' AND uid = '${uid}';`,
+        }
+        await client.query(query);
+      } else {
+        const query = {
+          text: `INSERT INTO comment_rated(cid, uid, liked, disliked) VALUES('${cid}', '${uid}', false, false);`,
+        }
+        await client.query(query);
+      }
+      // Update comment table
+      const commentQuery = {
+        text: `UPDATE comments SET likes = likes - 1 WHERE cid = '${cid}' AND uid = '${uid}';`,
+      }
+      await client.query(commentQuery);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+export const updateCommentDislike = async (cid: string, uid: string, increment: boolean) => {
+  try {
+    let entryExists = false;
+    // Check if comment is already liked
+    const ratingQuery = {
+      text: `SELECT disliked FROM comment_rated WHERE cid = '${cid}' AND uid = '${uid}';`,
+    }
+    const { rows } = await client.query(ratingQuery);
+    if (rows.length !== 0) {
+      if (rows[0].disliked === 'true' || rows[0].disliked === 'true') return;
+      entryExists = true;
+    }
+
+    if (increment) {
+      // Update comment_rated Table
+      if (entryExists) {
+        const query = {
+          text: `UPDATE comment_rated SET disliked = true WHERE cid = '${cid}' AND uid = '${uid}';`,
+        }
+        await client.query(query);
+      } else {
+        const query = {
+          text: `INSERT INTO comment_rated(cid, uid, liked, disliked) VALUES('${cid}', '${uid}', false, true);`,
+        }
+        await client.query(query);
+      }
+      // Update comment table
+      const commentQuery = {
+        text: `UPDATE comments SET dislikes = dislikes + 1 WHERE cid = '${cid}' AND uid = '${uid}';`,
+      }
+      await client.query(commentQuery);
+    } else {
+      // Update comment_rated Table
+      if (entryExists) {
+        const query = {
+          text: `UPDATE comment_rated SET disliked = false WHERE cid = '${cid}' AND uid = '${uid}';`,
+        }
+        await client.query(query);
+      } else {
+        const query = {
+          text: `INSERT INTO comment_rated(cid, uid, liked, disliked) VALUES('${cid}', '${uid}', false, false);`,
+        }
+        await client.query(query);
+      }
+      // Update comment table
+      const commentQuery = {
+        text: `UPDATE comments SET dislikes = dislikes - 1 WHERE cid = '${cid}' AND uid = '${uid}';`,
+      }
+      await client.query(commentQuery);
+    }
+  } catch (err) {
+    console.error(err);
   }
 }
 
@@ -260,3 +681,22 @@ export const changePlan = async (userID: string, newPlan: number): Promise<void>
     console.log(error);
   }
 };
+
+export const metadata = async (vid: string) => {
+  try {
+    const videoQuery = {
+      text: 'SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid = $1',
+      values: [vid]
+    }
+    const videoResult = await client.query(videoQuery);
+    const genreQuery = {
+      text: 'SELECT comedy, horror, action, drama, fantasy, documentary FROM Genres WHERE vid = $1',
+      values: [vid]
+    }
+    const genreResult = await client.query(genreQuery);
+    const result: MetaData = { ...videoResult.rows[0], genres: { ...genreResult.rows[0] }, img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0` }
+    return result;
+  } catch (err) {
+    console.log(err);
+  }
+}

@@ -15,10 +15,10 @@ const BrowseHeader = forwardRef((props, ref) => {
 
   const handleSignOut = () => {
     dispatch({
-      type: "LOGOUT"
-    })
-    history.push('/');
-  }
+      type: "LOGOUT",
+    });
+    history.push("/");
+  };
 
   useEffect(() => {
     const handleScroll = () =>
@@ -49,7 +49,7 @@ const BrowseHeader = forwardRef((props, ref) => {
     >
       <ul>
         <li>
-          <a href="/">
+          <a href="/browse">
             <img height="32" src={"images/logo/logo.png"} alt="Notflix" />
           </a>
         </li>
@@ -78,7 +78,13 @@ const BrowseHeader = forwardRef((props, ref) => {
           <Icon type="search" />
         </li>
         <li>
-          <Button onClick={handleSignOut}> Sign Out </Button>
+          <Button
+            style={{ border: "none", background: "transparent" }}
+            onClick={handleSignOut}
+          >
+            {" "}
+            Sign Out{" "}
+          </Button>
         </li>
       </ul>
     </nav>
