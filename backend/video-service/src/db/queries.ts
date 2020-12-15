@@ -586,7 +586,7 @@ export const updateCommentLike = async (cid: string, uid: string, increment: boo
       }
       // Update comment table
       const commentQuery = {
-        text: `UPDATE comments SET likes = likes + 1 WHERE cid = '${cid}' AND uid = '${uid}';`,
+        text: `UPDATE comments SET likes = likes + 1 WHERE cid = '${cid}';`,
       }
       await client.query(commentQuery);
     } else {
@@ -604,7 +604,7 @@ export const updateCommentLike = async (cid: string, uid: string, increment: boo
       }
       // Update comment table
       const commentQuery = {
-        text: `UPDATE comments SET likes = likes - 1 WHERE cid = '${cid}' AND uid = '${uid}';`,
+        text: `UPDATE comments SET likes = likes - 1 WHERE cid = '${cid}';`,
       }
       await client.query(commentQuery);
     }
@@ -641,7 +641,7 @@ export const updateCommentDislike = async (cid: string, uid: string, increment: 
       }
       // Update comment table
       const commentQuery = {
-        text: `UPDATE comments SET dislikes = dislikes + 1 WHERE cid = '${cid}' AND uid = '${uid}';`,
+        text: `UPDATE comments SET dislikes = dislikes + 1 WHERE cid = '${cid}';`,
       }
       await client.query(commentQuery);
     } else {
@@ -659,14 +659,22 @@ export const updateCommentDislike = async (cid: string, uid: string, increment: 
       }
       // Update comment table
       const commentQuery = {
-        text: `UPDATE comments SET dislikes = dislikes - 1 WHERE cid = '${cid}' AND uid = '${uid}';`,
+        text: `UPDATE comments SET dislikes = dislikes - 1 WHERE cid = '${cid}';`,
       }
       await client.query(commentQuery);
     }
   } catch (err) {
     console.error(err);
   }
-}
+};
+
+export const getCommentLikesDislikes = async (vid: string, uid: string) => {
+  const query = {
+    text: `SELECT cid, liked, disliked FROM comment_rated WHERE comment_rated.uid = '${uid}' AND comment_rated.cid IN(SELECT comments.cid FROM comments WHERE comments.vid = '${vid}');`
+  }
+  const { rows } = await client.query(query);
+  return rows;
+};
 
 export const changePlan = async (userID: string, newPlan: number): Promise<void> => {
   try {

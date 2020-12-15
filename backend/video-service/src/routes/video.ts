@@ -24,7 +24,8 @@ import {
     addComment,
     getComments,
     updateCommentLike,
-    updateCommentDislike
+    updateCommentDislike,
+    getCommentLikesDislikes
 } from '../db/queries';
 
 const router = express.Router();
@@ -496,6 +497,7 @@ router.post('/update-likes', async (req, res, next) => {
             res.status(400).send();
         return;
     }
+    // TODO add query to spark api to update there too
     try {
         const result = await updateVideoLikes(vid, increment);
         if (!result) {
@@ -546,14 +548,13 @@ router.post('/get-comments', async (req, res, next) => {
     }
     try {
         const result = await getComments(vid);
-        console.log(result);
         res.status(200).send(result)
     } catch (err) {
         console.error(err);
     }
 });
 
-router.post('/like-comment', async (req, res, next) => {
+router.post('/update-comment-likes', async (req, res, next) => {
     const { cid, uid, increment } = req.body as { cid: string, uid: string, increment: boolean };
     if (!cid || !uid || increment === undefined) {
         res.statusMessage = 'Undefined body';
@@ -568,7 +569,7 @@ router.post('/like-comment', async (req, res, next) => {
 });
 
 
-router.post('/dislike-comment', async (req, res, next) => {
+router.post('/update-comment-dislikes', async (req, res, next) => {
     const { cid, uid, increment } = req.body as { cid: string, uid: string, increment: boolean };
     if (!cid || !uid) {
         res.statusMessage = 'Undefined body';
@@ -581,5 +582,19 @@ router.post('/dislike-comment', async (req, res, next) => {
         console.error(err);
     }
 });
+
+router.post('/get-comment-likes-dislikes', async (req, res, next) => {
+    const { vid, uid } = req.body;
+    if (!vid || !uid) {
+        res.statusMessage = 'Undefined body';
+        res.status(400).send();
+    }
+    try {
+        const result = await getCommentLikesDislikes(vid, uid);
+        res.status(200).send(result);
+    } catch (err) {
+        console.error(err);
+    }
+})
 
 export default router;
