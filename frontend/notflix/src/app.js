@@ -71,6 +71,25 @@ const videoReducer = (state, action) => {
         ...state,
         likedVideos: action.payload.likedVideos
       }
+    case "ADD LIKED":
+      const updatedLikedListAdded = [...state.likedVideos, action.payload.videoMetadata];
+      localStorage.setItem("likedVideos", JSON.stringify(updatedLikedListAdded));
+      return {
+        ...state,
+        likedVideos: updatedLikedListAdded
+      }
+    case "REMOVE LIKED":
+      const updatedLikedListRemoved = [];
+      for (let i = 0; i < state.likedVideos.length; i++) {
+        if (state.likedVideos[i].vid !== action.payload.vid) {
+          updatedLikedListRemoved.push(state.likedVideos[i]);
+        }
+      }
+      localStorage.setItem("likedVideos", JSON.stringify(updatedLikedListRemoved));
+      return {
+        ...state,
+        likedVideos: updatedLikedListRemoved
+      }
     case "UPDATE LISTED":
       localStorage.setItem("listedVideos", JSON.stringify(action.payload.listedVideos));
       return {

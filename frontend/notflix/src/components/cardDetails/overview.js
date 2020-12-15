@@ -31,15 +31,10 @@ const Overview = (props) => {
     updateVideoLikes(auth.state.uid, props.metadata.vid, true)
       .then((result) => {
         setLoadingLike(false);
-        // Update liked videos context
-        const likedVideos = video.state.likedVideos;
-        likedVideos.push({
-          ...props.metadata,
-        });
         video.dispatch({
-          type: "UPDATE LIKED",
+          type: "ADD LIKED",
           payload: {
-            likedVideos: likedVideos,
+            videoMetadata: props.metadata,
           },
         });
         setLoading(false);
@@ -56,7 +51,6 @@ const Overview = (props) => {
     props.metadata.likes -= 1;
     updateVideoLikes(auth.state.uid, props.metadata.vid, false)
       .then((result) => {
-        setLoadingLike(false);
         // Update liked videos context
         const likedVideos = video.state.likedVideos;
         const updatedLikedVideos = [];
@@ -66,11 +60,12 @@ const Overview = (props) => {
           }
         }
         video.dispatch({
-          type: "UPDATE LIKED",
+          type: "REMOVE LIKED",
           payload: {
-            likedVideos: updatedLikedVideos,
+            vid: props.metadata.vid,
           },
         });
+        setLoadingLike(false);
         setLoading(false);
       })
       .catch((err) => {
@@ -144,7 +139,6 @@ const Overview = (props) => {
     setLoading(true);
     addToList(auth.state.uid, props.metadata.vid)
       .then((result) => {
-        setLoading(false);
         // Update listed videos context
         const listedVideos = video.state.listedVideos;
         listedVideos.push({
@@ -156,6 +150,7 @@ const Overview = (props) => {
             listedVideos: listedVideos,
           },
         });
+        setLoading(false);
         setInList(true);
       })
       .catch((err) => {
@@ -226,20 +221,20 @@ const Overview = (props) => {
             {loading ? <>Loading...</> : <>Add to List</>}
           </Button>
         )}
-      {isLiked ? (
-        <i
-          style={{ color: "red" }}
-          disabled={loadingLike || isLiked}
-          onClick={removeLikeClick}
-          className={`Icon fa fa-thumbs-up`}
-        />
-      ) : (
+      {isLiked ?
+        <Button disabled={loadingLike} onClick={removeLikeClick}>
           <i
-            disabled={loadingLike}
-            onClick={likeClick}
+            style={{ color: "red" }}
             className={`Icon fa fa-thumbs-up`}
           />
-        )}
+        </Button>
+        :
+        <Button disabled={loadingLike} onClick={likeClick}>
+          <i
+            className={`Icon fa fa-thumbs-up`}
+          />
+        </Button>
+      }
       {/* {isDisliked ? (
         <i
           style={{ padding: 15 }}
