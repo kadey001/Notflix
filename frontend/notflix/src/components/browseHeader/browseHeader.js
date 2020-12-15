@@ -96,11 +96,11 @@ const BrowseHeader = forwardRef((props, ref) => {
           </a>
         </li>
 
-        <li>
+        {/* <li>
           <a href="/subscriptions">
             <p> Subscriptions </p>
           </a>
-        </li>
+        </li> */}
       </ul>
 
       <ul className="right">
