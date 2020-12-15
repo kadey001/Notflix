@@ -4,7 +4,7 @@ import { css, jsx } from "@emotion/react";
 import Icon from "../../components/Icon/Icon";
 import Overview from "./overview";
 
-const DetailPane = ({ activeRow, pos, setActive, metadata, top }) =>
+const DetailPane = ({ pos, metadata, top, reducer }) =>
   pos && (
     <div
       css={[
@@ -20,7 +20,9 @@ const DetailPane = ({ activeRow, pos, setActive, metadata, top }) =>
         `}
       >
         <Overview metadata={metadata} />
-        <i css={timesIcon} className={`Icon fa fa-times`} onClick={setActive} />
+        <i css={timesIcon} className={`Icon fa fa-times`} onClick={() => {
+          reducer.dispatch({ type: 'HIDE INFO' })
+        }} />
       </div>
     </div>
   );

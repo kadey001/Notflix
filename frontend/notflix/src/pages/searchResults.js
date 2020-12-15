@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useCallback } from "react";
+import React, { useState, useEffect, useContext, useCallback, useReducer } from "react";
 import { Global, css, jsx } from "@emotion/react";
 import styled from "@emotion/styled";
 import Icon from "../components/Icon/Icon";
@@ -14,15 +14,36 @@ import { Redirect, useLocation } from "react-router-dom";
 import { getList, getLiked } from "../components/api/videos";
 import { Grid, Segment } from "semantic-ui-react";
 
+const initialState = {
+  showInfo: false,
+}
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "SHOW INFO":
+      return {
+        ...state,
+        showInfo: true
+      };
+    case "HIDE INFO":
+      return {
+        ...state,
+        showInfo: false
+      };
+    default:
+      return state;
+  }
+};
+
 const initialRow = {
   results: "",
   pos: { top: 0, bottom: 0 },
 };
 export default function SearchResults() {
+  const [state, dispatch] = useReducer(reducer, initialState);
   const location = useLocation();
   const history = useHistory();
   const results = location.state;
-  console.log(results);
   const [activeRow, setActiveRow] = useState(initialRow);
   const [hovered, setHovered] = useState(false);
   const [metadata, setMetadata] = useState({
@@ -33,27 +54,13 @@ export default function SearchResults() {
   });
   const auth = useContext(AuthContext);
 
-  // const {
-  //   results,
-  //   pos: { top, bottom },
-  // } = activeRow;
-
   const setActive = (activeRow) => {
     activeRow.results ? setActiveRow(activeRow) : setActiveRow(initialRow);
   };
-  console.log(activeRow);
-  // useEffect(() => {
-  //   if (!results) return;
-  //   window.scrollTo({
-  //     top: top + window.scrollY,
-  //     left: 0,
-  //     behavior: "smooth",
-  //   });
-  // }, [results]);
 
   const openCard = (metadata) => {
-    console.log("Metadata: ", metadata);
-
+    // console.log("Metadata: ", metadata);
+    dispatch({ type: 'SHOW INFO' });
     setMetadata({
       vid: metadata.vid,
       title: metadata.title,
@@ -110,9 +117,8 @@ export default function SearchResults() {
           >
             <Grid style={{ display: "flex" }} doubling columns={4}>
               {results.slice(0).map((video) => (
-                <Grid.Column>
+                <Grid.Column key={video.vid}>
                   <ContentCard
-                    key={video.vid}
                     data-img={video.img}
                     onMouseEnter={handleHover}
                     onMouseLeave={handleHover}
@@ -138,16 +144,20 @@ export default function SearchResults() {
               ))}
             </Grid>
           </div>
-          <CardDetails
-            pos={activeRow}
-            setActive={setActive}
-            metadata={metadata}
-          />
+          {state.showInfo ?
+            <CardDetails
+              pos={activeRow}
+              metadata={metadata}
+              reducer={{ state, dispatch }}
+            />
+            :
+            <></>
+          }
           <Footer />
         </>
       ) : (
-        <Redirect to="/" />
-      )}
+          <Redirect to="/" />
+        )}
     </div>
   );
 }
