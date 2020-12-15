@@ -1,12 +1,17 @@
 /** @jsxFrag React.Fragment */
 import React, { useContext, useEffect, useState } from "react";
-import axios from 'axios';
+import axios from "axios";
 import { css, jsx } from "@emotion/react";
 import { Button, Loader } from "semantic-ui-react";
 import { useHistory } from "react-router-dom";
 import { AuthContext } from "../../context/auth";
 import { VideoContext } from "../../context/video";
-import { addToList, removeFromList, updateVideoLikes, updateVideoDislikes } from "../api/videos";
+import {
+  addToList,
+  removeFromList,
+  updateVideoLikes,
+  updateVideoDislikes,
+} from "../api/videos";
 
 /**
  * @function Overview
@@ -171,9 +176,9 @@ const Overview = (props) => {
         video.dispatch({
           type: "REMOVE FROM LIST",
           payload: {
-            vid: props.metadata.vid
-          }
-        })
+            vid: props.metadata.vid,
+          },
+        });
         setInList(false);
       })
       .catch((err) => {
@@ -184,16 +189,14 @@ const Overview = (props) => {
 
   function formatDate(date) {
     var _day = new Date(date),
-      month = '' + (_day.getMonth() + 1),
-      day = '' + _day.getDate(),
+      month = "" + (_day.getMonth() + 1),
+      day = "" + _day.getDate(),
       year = _day.getFullYear();
 
-    if (month.length < 2)
-      month = '0' + month;
-    if (day.length < 2)
-      day = '0' + day;
+    if (month.length < 2) month = "0" + month;
+    if (day.length < 2) day = "0" + day;
 
-    return [year, month, day].join('-');
+    return [year, month, day].join("-");
   }
 
   useEffect(() => {
@@ -214,16 +217,20 @@ const Overview = (props) => {
   }, []);
   return (
     <div css={OverviewCSS}>
-      <p>title: {props.metadata.title}</p>
-      <p>description: {props.metadata.description}</p>
-      <p>released: {formatDate(Date(props.metadata.released))}</p>
-      <p>length: {props.metadata.length} min</p>
-      <p>likes: {props.metadata.likes}</p>
+      <p>Title: {props.metadata.title}</p>
+      <p>Description: {props.metadata.description}</p>
+      <p>Released: {formatDate(Date(props.metadata.released))}</p>
+      <p>Length: {props.metadata.length} min</p>
+      <p>Likes: {props.metadata.likes}</p>
       {/* <p>dislikes: {props.metadata.dislikes}</p> */}
-      <p>views: {props.metadata.views}</p>
+      <p>Views: {props.metadata.views}</p>
       <Button
         variant="contained"
-        onClick={() => history.push(`/watch/${props.metadata.vid}`, { vid: props.metadata.vid })}
+        onClick={() =>
+          history.push(`/watch/${props.metadata.vid}`, {
+            vid: props.metadata.vid,
+          })
+        }
       >
         Play
       </Button>
@@ -232,24 +239,19 @@ const Overview = (props) => {
           {loading ? <>Loading...</> : <>Remove From List</>}
         </Button>
       ) : (
-          <Button disabled={loading} onClick={addList}>
-            {loading ? <>Loading...</> : <>Add to List</>}
-          </Button>
-        )}
-      {isLiked ?
+        <Button disabled={loading} onClick={addList}>
+          {loading ? <>Loading...</> : <>Add to List</>}
+        </Button>
+      )}
+      {isLiked ? (
         <Button disabled={loadingLike} onClick={removeLikeClick}>
-          <i
-            style={{ color: "red" }}
-            className={`Icon fa fa-thumbs-up`}
-          />
+          <i style={{ color: "red" }} className={`Icon fa fa-thumbs-up`} />
         </Button>
-        :
+      ) : (
         <Button disabled={loadingLike} onClick={likeClick}>
-          <i
-            className={`Icon fa fa-thumbs-up`}
-          />
+          <i className={`Icon fa fa-thumbs-up`} />
         </Button>
-      }
+      )}
       {/* {isDisliked ? (
         <i
           style={{ padding: 15 }}

@@ -25,12 +25,12 @@ const DetailPane = ({ category, pos, setActive, metadata, top }) =>
     </div>
   );
 const DetailsCSS = css`
-  height: 475px;
+  max-height: 600px;
+  padding-bottom: 30px;
   background: black;
   width: 100%;
   position: absolute;
   border: 2px solid white;
-
   z-index: 99;
   color: white;
 `;

@@ -20,14 +20,19 @@ const DetailPane = ({ pos, metadata, top, reducer }) =>
         `}
       >
         <Overview metadata={metadata} />
-        <i css={timesIcon} className={`Icon fa fa-times`} onClick={() => {
-          reducer.dispatch({ type: 'HIDE INFO' })
-        }} />
+        <i
+          css={timesIcon}
+          className={`Icon fa fa-times`}
+          onClick={() => {
+            reducer.dispatch({ type: "HIDE INFO" });
+          }}
+        />
       </div>
     </div>
   );
 const DetailsCSS = css`
-  height: 475px;
+  max-height: 600px;
+  padding-bottom: 30px;
   background: black;
   width: 100%;
   position: absolute;
