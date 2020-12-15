@@ -4,28 +4,15 @@ import { css, jsx } from "@emotion/react";
 import Icon from "../../components/Icon/Icon";
 import Overview from "./overview";
 
-const DetailPane = ({ category, pos, setActive, metadata }) =>
+const DetailPane = ({ category, pos, setActive, metadata, top }) =>
   category && (
     <div
-      css={css`
-        height: 475px;
-        background: black;
-        width: 100%;
-        position: absolute;
-        border: 2px solid white;
-        top: ${pos + window.scrollY}px;
-        z-index: 99;
-        color: white;
-
-        .Icon {
-          font-size: 32px;
-          color: white;
-          position: absolute;
-          right: 20px;
-          top: 20px;
-          cursor: pointer;
-        }
-      `}
+      css={[
+        DetailsCSS,
+        css`
+          top: ${top}px;
+        `,
+      ]}
     >
       <div
         css={css`
@@ -33,9 +20,26 @@ const DetailPane = ({ category, pos, setActive, metadata }) =>
         `}
       >
         <Overview metadata={metadata} />
-        <Icon type="times" onClick={setActive} />
+        <i css={timesIcon} className={`Icon fa fa-times`} onClick={setActive} />
       </div>
     </div>
   );
+const DetailsCSS = css`
+  height: 475px;
+  background: black;
+  width: 100%;
+  position: absolute;
+  border: 2px solid white;
 
+  z-index: 99;
+  color: white;
+`;
+const timesIcon = css`
+  font-size: 32px;
+  color: white;
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  cursor: pointer;
+`;
 export default DetailPane;

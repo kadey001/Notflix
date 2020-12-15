@@ -102,6 +102,7 @@ export default function Browse() {
             pos={bottom}
             setActive={setActive}
             metadata={metadata}
+            top={bottom + window.scrollY}
           />
           <Footer />
         </>
