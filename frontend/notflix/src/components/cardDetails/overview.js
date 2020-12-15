@@ -1,11 +1,11 @@
 /** @jsxFrag React.Fragment */
 import React, { useContext, useEffect, useState } from "react";
 import { css, jsx } from "@emotion/react";
-import { Button } from "semantic-ui-react";
+import { Button, Loader } from "semantic-ui-react";
 import { useHistory } from "react-router-dom";
 import { AuthContext } from "../../context/auth";
 import { VideoContext } from "../../context/video";
-import { addToList, removeFromList } from "../api/videos";
+import { addToList, removeFromList, likeVideo } from "../api/videos";
 
 /**
  * @function Overview
@@ -13,8 +13,10 @@ import { addToList, removeFromList } from "../api/videos";
 const Overview = (props) => {
   const [inList, setInList] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+  const [isDisliked, setIsDisliked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingLike, setLoadingLike] = useState(false);
+  const [loadingDislike, setLoadingDislike] = useState(false);
   const history = useHistory();
   const auth = useContext(AuthContext);
   const video = useContext(VideoContext);
@@ -25,7 +27,7 @@ const Overview = (props) => {
     e.preventDefault();
     setLoadingLike(true);
     console.log("Add to liked");
-    likeClick(auth.state.uid, props.metadata.vid)
+    likeVideo(auth.state.uid, props.metadata.vid)
       .then((result) => {
         setIsLiked(true);
         setLoadingLike(false);
@@ -167,9 +169,20 @@ const Overview = (props) => {
           {loadingLike ? <>Loading...</> : <>Remove Like</>}
         </Button>
       ) : (
-        <Button disabled={loadingLike} onClick={likeClick}>
-          {loadingLike ? <>Loading...</> : <>Like</>}
-        </Button>
+        <i
+          disabled={loadingLike}
+          onClick={likeClick}
+          className={`Icon fa fa-thumbs-up`}
+        />
+      )}
+      {isDisliked ? (
+        <i disabled={loadingLike} className={`Icon fa fa-thumbs-down`} />
+      ) : (
+        <i
+          style={{ padding: 15 }}
+          disabled={loadingLike}
+          className={`Icon fa fa-thumbs-down`}
+        />
       )}
     </div>
   );
