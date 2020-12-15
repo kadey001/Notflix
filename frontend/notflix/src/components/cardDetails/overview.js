@@ -176,7 +176,11 @@ const Overview = (props) => {
         />
       )}
       {isDisliked ? (
-        <i disabled={loadingLike} className={`Icon fa fa-thumbs-down`} />
+        <i
+          style={{ padding: 15 }}
+          disabled={loadingLike}
+          className={`Icon fa fa-thumbs-down`}
+        />
       ) : (
         <i
           style={{ padding: 15 }}
