@@ -6,7 +6,6 @@ import "normalize.css";
 
 // const auth = createContext();
 
-
 render(
   <>
     <GlobalStyles />

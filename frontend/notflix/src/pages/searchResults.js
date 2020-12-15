@@ -3,7 +3,7 @@ import { Global, css, jsx } from "@emotion/react";
 import styled from "@emotion/styled";
 import Icon from "../components/Icon/Icon";
 import Footer from "../components/footer/footer";
-import CardDetails from "../components/cardDetails/cardDetails";
+import CardDetails from "../components/cardDetails/searchCardDetails";
 import BrowseHeader from "../components/browseHeader/browseHeader";
 import HeaderJumbotron from "../components/headerJumbotron/headerJumbotron";
 import { useHistory } from "react-router-dom";
@@ -12,7 +12,7 @@ import { AuthContext } from "../context/auth";
 import { VideoContext } from "../context/video";
 import { Redirect, useLocation } from "react-router-dom";
 import { getList, getLiked } from "../components/api/videos";
-import { Grid } from "semantic-ui-react";
+import { Grid, Segment } from "semantic-ui-react";
 
 const initialRow = {
   results: "",
@@ -41,7 +41,7 @@ export default function SearchResults() {
   const setActive = (activeRow) => {
     activeRow.results ? setActiveRow(activeRow) : setActiveRow(initialRow);
   };
-
+  console.log(activeRow);
   // useEffect(() => {
   //   if (!results) return;
   //   window.scrollTo({
@@ -53,6 +53,7 @@ export default function SearchResults() {
 
   const openCard = (metadata) => {
     console.log("Metadata: ", metadata);
+
     setMetadata({
       vid: metadata.vid,
       title: metadata.title,
@@ -74,7 +75,7 @@ export default function SearchResults() {
 
   const getPos = useCallback((e) => {
     const pos = e.target.parentElement.getBoundingClientRect();
-    setActive({ results, pos });
+    setActive({ pos });
   }, []);
 
   return (
@@ -83,64 +84,70 @@ export default function SearchResults() {
         <>
           <Global styles={GlobalCSS} />
           <BrowseHeader />
+
           <HeaderJumbotron />
           <div
             css={css`
-            h2 {
-              margin: 20px 0 10px;
-              color: white;
-            }
-            .block-wrapper {
-              display: flex;
-              width: 100%;
-              position: relative;
-            }
-          `}
+              h2 {
+                margin: 20px 0 10px;
+                color: white;
+              }
+              .block-wrapper {
+                display: flex;
+                width: 100%;
+                position: relative;
+              }
+            `}
           >
             <h2>Search Results</h2>
           </div>
-          <Grid doubling columns={4}>
-            {results.slice(0).map((video) => (
-              <Grid.Column>
-                <ContentCard
-                  key={video.vid}
-                  data-img={video.img}
-                  onMouseEnter={handleHover}
-                  onMouseLeave={handleHover}
-                >
-                  {video.img === hovered && (
-                    <div className="content">
-                      <Icon
-                        type="play"
-                        onClick={() => history.push(`/watch/${video.vid}`)}
-                      />
-                      <Icon
-                        type="info-circle"
-                        onClick={(e) => {
-                          getPos(e);
-                          openCard(video);
-                        }}
-                      />
-                      <Icon type="thumbs-up" />
-                    </div>
-                  )}
-                  <img src={video.img} />
-                </ContentCard>
-              </Grid.Column>
-
-            ))}
-          </Grid>
-          {/* <CardDetails
-            category='Search Results'
-            pos={0}
+          <div
+            css={css`
+              display: flex;
+              flex-direction: column;
+              flex: 1;
+            `}
+          >
+            <Grid style={{ display: "flex" }} doubling columns={4}>
+              {results.slice(0).map((video) => (
+                <Grid.Column>
+                  <ContentCard
+                    key={video.vid}
+                    data-img={video.img}
+                    onMouseEnter={handleHover}
+                    onMouseLeave={handleHover}
+                  >
+                    {video.img === hovered && (
+                      <div className="content">
+                        <Icon
+                          type="play"
+                          onClick={() => history.push(`/watch/${video.vid}`)}
+                        />
+                        <Icon
+                          type="info-circle"
+                          onClick={(e) => {
+                            getPos(e);
+                            openCard(video);
+                          }}
+                        />
+                      </div>
+                    )}
+                    <img src={video.img} />
+                  </ContentCard>
+                </Grid.Column>
+              ))}
+            </Grid>
+          </div>
+          <CardDetails
+            pos={activeRow}
             setActive={setActive}
             metadata={metadata}
-          /> */}
+          />
           <Footer />
         </>
       ) : (
-          <Redirect to="/" />
-        )}
+        <Redirect to="/" />
+      )}
     </div>
   );
 }
@@ -197,6 +204,7 @@ const ContentCard = styled.div`
   height: 9.5vw;
   width: 18vw;
   margin-right: 4px;
+  margin-left: 20px;
 
   .content {
     position: absolute;
