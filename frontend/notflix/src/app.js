@@ -153,9 +153,9 @@ export default function App() {
           <Route exact path="/upload">
             <Upload />
           </Route>
-          <Route exact path="/subscriptions">
+          {/* <Route exact path="/subscriptions">
             <Subscriptions />
-          </Route>
+          </Route> */}
           <Route exact path="/search">
             <SearchResults />
           </Route>
