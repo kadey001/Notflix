@@ -1,5 +1,5 @@
 import React, { Fragment, useState, useEffect } from "react";
-import axios from 'axios';
+import axios from "axios";
 import HeaderJumbotron from "../components/headerJumbotron/headerJumbotron";
 import { Global, css } from "@emotion/react";
 import PlayerHeader from "../components/playerHeader/playerHeader";
@@ -21,7 +21,7 @@ async function addVideo(uploadData, videoFile, thumbnailFile) {
   formData.append("action", uploadData.action);
   formData.append("drama", uploadData.drama);
   formData.append("fantasy", uploadData.fantasy);
-  formData.append("documentary", uploadData.documentary)
+  formData.append("documentary", uploadData.documentary);
   const config = {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -39,7 +39,9 @@ export default function Upload() {
   const [videoFile, setvideoFile] = useState([]);
   const [thumbnailFile, setThumbnailFile] = useState([]);
   const [videoFileName, setVideoFileName] = useState("Choose a video");
-  const [thumbnailFileName, setThumbnailFileName] = useState("Choose a thumbnail");
+  const [thumbnailFileName, setThumbnailFileName] = useState(
+    "Choose a thumbnail"
+  );
   const [loading, setLoading] = useState(false);
 
   const [uploadData, setUploadData] = useState({
@@ -52,7 +54,7 @@ export default function Upload() {
     action: false,
     drama: false,
     fantasy: false,
-    documentary: false
+    documentary: false,
   });
 
   console.log(startDate);
@@ -72,16 +74,16 @@ export default function Upload() {
     event.preventDefault();
     setLoading(true);
     // Disable submit button so only one req is sent.
-    addVideo(uploadData, videoFile, thumbnailFile).then((result) => {
-      console.log(result);
-      setLoading(false);
-    }).catch((err) => {
-      if (err.response)
-        setError(err.response.statusText);
-      else
-        setError(err.message);
-      setLoading(false);
-    });
+    addVideo(uploadData, videoFile, thumbnailFile)
+      .then((result) => {
+        console.log(result);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (err.response) setError(err.response.statusText);
+        else setError(err.message);
+        setLoading(false);
+      });
   };
 
   const onChangeComedy = () => {
@@ -124,7 +126,7 @@ export default function Upload() {
       ...uploadData,
       documentary: !initialState.documentary,
     }));
-  }
+  };
 
   const onVideoChange = (e) => {
     setvideoFile(e.target.files[0]);
@@ -134,7 +136,7 @@ export default function Upload() {
   const onThumbnailChange = (e) => {
     setThumbnailFile(e.target.files[0]);
     setThumbnailFileName(e.target.files[0].name);
-  }
+  };
   return (
     <>
       <Global styles={GlobalCSS} />
@@ -147,11 +149,21 @@ export default function Upload() {
         <Form.Base onSubmit={handleUpload} method="POST">
           <div className="upload-btn-wrapper">
             <button className="btn">{videoFileName}</button>
-            <input type="file" accept="video/mp4" name="myfile" onChange={onVideoChange} />
+            <input
+              type="file"
+              accept="video/mp4"
+              name="myfile"
+              onChange={onVideoChange}
+            />
           </div>
           <div className="upload-btn-wrapper">
             <button className="btn">{thumbnailFileName}</button>
-            <input type="file" accept="image/jpeg" name="myfile" onChange={onThumbnailChange} />
+            <input
+              type="file"
+              accept="image/jpeg"
+              name="myfile"
+              onChange={onThumbnailChange}
+            />
           </div>
           <Form.Input
             placeholder="Title"
@@ -195,7 +207,7 @@ export default function Upload() {
               width: 314,
               backgroundColor: "#333",
               borderRadius: 4,
-              height: 60,
+              height: 75,
               justifyContent: "center",
             }}
           >
@@ -349,8 +361,8 @@ const GlobalCSS = css`
   }
   .label {
     display: inline-block;
-    width: 6em;
-    margin-right: 0.5em;
+    width: 8em;
+    margin-right: 1.5em;
     padding-top: 0.3em;
     color: #a9a9a9;
   }
