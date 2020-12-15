@@ -1,7 +1,6 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-import cors from 'cors';
 
 import { signUp, signIn, checkExisting, Auth } from '../db/queries';
 

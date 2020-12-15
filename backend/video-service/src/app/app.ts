@@ -1,8 +1,8 @@
 import express, { Express } from 'express';
 import createError from 'http-errors';
-import config from 'config/app';
-import env from 'config/env';
-import routes from 'routes';
+import config from '../config/app';
+import env from '../config/env';
+import routes from '../routes';
 import { errorHandler } from '../lib/errors/index';
 
 function initApp(): Express {

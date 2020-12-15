@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
-import app from 'app';
-import env from 'config/env';
+import app from '../app';
+import env from '../config/env';
 
-import { connectDB } from 'db/postgresql';
+import { connectDB } from '../db/postgresql';
 import { Server } from 'http';
 import { Socket } from 'net';
 
@@ -16,9 +16,9 @@ async function makeServer() {
             socket.on('close', function () {
                 /* remove socket when it is closed */
                 sockets.delete(socket);
-                console.log('Socket Closed');
+                // console.log('Socket Closed');
             });
-            console.log('Connection made by client');
+            // console.log('Connection made by client');
             socket.setTimeout(10 * 1000); // 10 second timeout
         });
         process.on('uncaughtException', (err) => {

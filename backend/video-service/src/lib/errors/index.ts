@@ -1,6 +1,6 @@
 import { Response, Request, NextFunction } from 'express';
 
-import env from 'config/env';
+import env from '../../config/env';
 import ClientError from './client';
 
 export { default as ClientError } from './client';
