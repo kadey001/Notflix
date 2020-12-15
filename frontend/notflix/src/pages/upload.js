@@ -142,7 +142,7 @@ export default function Upload() {
           </div>
           <div className="upload-btn-wrapper">
             <button className="btn">{thumbnailFileName}</button>
-            <input type="file" accept="image/*" name="myfile" onChange={onThumbnailChange} />
+            <input type="file" accept="image/jpeg" name="myfile" onChange={onThumbnailChange} />
           </div>
           <Form.Input
             placeholder="Title"
