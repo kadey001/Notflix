@@ -25,7 +25,15 @@ export const searchVideos = (keyword) => {
 }
 
 export const countView = (vid) => {
-  return axios.get(`http://13.77.174.221:3001/video/filter-genre?${vid}`);
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  return axios.post(`http://13.77.174.221:3001/video/count-view`,
+    { vid: vid },
+    config
+  );
 }
 
 export const addToList = (uid, vid) => {
