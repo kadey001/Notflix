@@ -23,7 +23,7 @@ const authInitialState = {
 const authReducer = (state, action) => {
   switch (action.type) {
     case "LOGIN":
-      console.log("LOGIN: ", action.payload.uid, action.payload.username);
+      // console.log("LOGIN: ", action.payload.uid, action.payload.username);
       localStorage.setItem("uid", JSON.stringify(action.payload.uid));
       localStorage.setItem("username", JSON.stringify(action.payload.username));
       localStorage.setItem("token", JSON.stringify(action.payload.token));
@@ -56,8 +56,8 @@ const videoInitialState = {
 };
 const videoReducer = (state, action) => {
   switch (action.type) {
+    // console.log("UPDATE: ", action.type, action.payload);
     case "UPDATE":
-      console.log("UPDATE: ", action.payload);
       localStorage.setItem("likedVideos", JSON.stringify(action.payload.likedVideos));
       localStorage.setItem("listedVideos", JSON.stringify(action.payload.listedVideos));
       return {
@@ -66,21 +66,18 @@ const videoReducer = (state, action) => {
         listedVideos: action.payload.listedVideos
       }
     case "UPDATE LIKED":
-      console.log("UPDATE: ", action.payload);
       localStorage.setItem("likedVideos", JSON.stringify(action.payload.likedVideos));
       return {
         ...state,
         likedVideos: action.payload.likedVideos
       }
     case "UPDATE LISTED":
-      console.log("UPDATE: ", action.payload);
       localStorage.setItem("listedVideos", JSON.stringify(action.payload.listedVideos));
       return {
         ...state,
         listedVideos: action.payload.likedVideos
       }
     case "UPDATE GENRES":
-      console.log("UPDATE: ", action.payload);
       localStorage.setItem("genres", JSON.stringify(action.payload.genres));
       return {
         ...state,

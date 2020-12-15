@@ -7,6 +7,7 @@ import { Button } from "semantic-ui-react";
 import { useHistory } from "react-router-dom";
 import { AuthContext } from "../../context/auth";
 import { searchVideos } from "../api/videos";
+import { VideoContext } from "../../context/video";
 
 const leftLinks = ["Upload", "Subscriptions"];
 
@@ -16,11 +17,15 @@ const BrowseHeader = forwardRef((props, ref) => {
   const [searching, setSearching] = useState(false);
   const [searchText, setSearchText] = useState("");
   const history = useHistory();
-  const { dispatch } = useContext(AuthContext);
+  const auth = useContext(AuthContext);
+  const video = useContext(VideoContext);
 
   const handleSignOut = () => {
-    dispatch({
+    auth.dispatch({
       type: "LOGOUT",
+    });
+    video.dispatch({
+      type: "CLEAR"
     });
     history.push("/");
   };
@@ -109,8 +114,8 @@ const BrowseHeader = forwardRef((props, ref) => {
                 onChange={({ target }) => setSearchText(target.value)}
               />
             ) : (
-              <></>
-            )}
+                <></>
+              )}
           </form>
         </li>
         <li>

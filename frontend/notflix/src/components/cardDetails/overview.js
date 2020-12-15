@@ -20,13 +20,10 @@ const Overview = (props) => {
   const history = useHistory();
   const auth = useContext(AuthContext);
   const video = useContext(VideoContext);
-  // console.log("Props: ", props);
-  // console.log("Video State: ", video.state);
 
   const likeClick = (e) => {
     e.preventDefault();
     setLoadingLike(true);
-    console.log("Add to liked");
     setIsLiked(true);
     props.metadata.likes += 1;
     updateVideoLikes(auth.state.uid, props.metadata.vid, true)
@@ -53,7 +50,6 @@ const Overview = (props) => {
   const removeLikeClick = (e) => {
     e.preventDefault();
     setLoadingLike(true);
-    console.log("Remove from liked");
     setIsLiked(false);
     props.metadata.likes -= 1;
     updateVideoLikes(auth.state.uid, props.metadata.vid, false)
@@ -144,7 +140,6 @@ const Overview = (props) => {
   const addList = (e) => {
     e.preventDefault();
     setLoading(true);
-    console.log("Add to list");
     addToList(auth.state.uid, props.metadata.vid)
       .then((result) => {
         setInList(true);
@@ -170,7 +165,6 @@ const Overview = (props) => {
   const removeList = (e) => {
     e.preventDefault();
     setLoading(true);
-    console.log("Remove from list");
     removeFromList(auth.state.uid, props.metadata.vid)
       .then((result) => {
         setInList(false);

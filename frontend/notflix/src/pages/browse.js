@@ -54,8 +54,7 @@ export default function Browse() {
   }, [category]);
 
   useEffect(() => {
-    console.log("State: ", state);
-    // Update listed vids + liked vids
+    // console.log("State: ", state);
     getList(auth.state.uid)
       .then((result) => {
         dispatch({

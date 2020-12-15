@@ -52,7 +52,7 @@ const MovieRows = ({ category, setActive, setMetadata }) => {
       case "Top":
         getTop()
           .then((result) => {
-            console.log("Top Results: ", result);
+            // console.log("Top Results: ", result);
             setMovies(result.data);
           })
           .catch((err) => {
@@ -68,7 +68,7 @@ const MovieRows = ({ category, setActive, setMetadata }) => {
         const genres = setGenres(category);
         getGenre(genres)
           .then((result) => {
-            console.log(result.data);
+            // console.log(result.data);
             setMovies(result.data);
           })
           .catch((err) => {
@@ -81,7 +81,7 @@ const MovieRows = ({ category, setActive, setMetadata }) => {
   }, []);
 
   const openCard = (metadata) => {
-    console.log("Metadata: ", metadata);
+    // console.log("Metadata: ", metadata);
     setMetadata({
       vid: metadata.vid,
       title: metadata.title,

@@ -6,7 +6,6 @@ export const getTop = () => {
 
 // genres is object of booleans
 export const getGenre = (genres) => {
-  console.log(genres);
   const config = {
     headers: {
       "Content-Type": "application/json",
@@ -82,7 +81,6 @@ export const getViewed = (uid) => {
 }
 
 export const addComment = (vid, uid, username, comment) => {
-  console.log(vid, uid, username, comment);
   const config = {
     headers: {
       "Content-Type": "application/json",
