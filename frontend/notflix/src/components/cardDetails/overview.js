@@ -182,6 +182,20 @@ const Overview = (props) => {
       });
   };
 
+  function formatDate(date) {
+    var _day = new Date(date),
+      month = '' + (_day.getMonth() + 1),
+      day = '' + _day.getDate(),
+      year = _day.getFullYear();
+
+    if (month.length < 2)
+      month = '0' + month;
+    if (day.length < 2)
+      day = '0' + day;
+
+    return [year, month, day].join('-');
+  }
+
   useEffect(() => {
     let listedVideos = video.state.listedVideos;
     if (!listedVideos) listedVideos = [];
@@ -202,6 +216,7 @@ const Overview = (props) => {
     <div css={OverviewCSS}>
       <p>title: {props.metadata.title}</p>
       <p>description: {props.metadata.description}</p>
+      <p>released: {formatDate(Date(props.metadata.released))}</p>
       <p>length: {props.metadata.length} min</p>
       <p>likes: {props.metadata.likes}</p>
       {/* <p>dislikes: {props.metadata.dislikes}</p> */}

@@ -99,6 +99,7 @@ const MovieRows = ({ category, setActive, setMetadata }) => {
       views: metadata.views,
       genres: metadata.genres,
       img: metadata.img,
+      released: metadata.released
     });
   };
 
