@@ -141,6 +141,15 @@ const Overview = (props) => {
       }
     }
   }, []);
+  useEffect(() => {
+    const likedVideos = video.state.likedVideos;
+    if (!likedVideos) return;
+    for (let i = 0; i < likedVideos.length; i++) {
+      if (likedVideos[i].vid === props.metadata.vid) {
+        setIsLiked(true);
+      }
+    }
+  }, []);
   return (
     <div css={OverviewCSS}>
       <p>title: {props.metadata.title}</p>
@@ -165,9 +174,12 @@ const Overview = (props) => {
         </Button>
       )}
       {isLiked ? (
-        <Button disabled={loadingLike} onClick={removeLikeClick}>
-          {loadingLike ? <>Loading...</> : <>Remove Like</>}
-        </Button>
+        <i
+          style={{ color: "red" }}
+          disabled={loadingLike}
+          onClick={likeClick}
+          className={`Icon fa fa-thumbs-up`}
+        />
       ) : (
         <i
           disabled={loadingLike}
