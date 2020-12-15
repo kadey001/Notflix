@@ -1,13 +1,13 @@
 import request from 'supertest';
 
-import { _test as EnvTest } from 'config/env';
-import { connect } from 'db';
+import { _test as EnvTest } from '../config/env';
+import { connectDB } from '../db/postgresql';
 import app, { _test as AppTest } from './app';
 
 const { env } = EnvTest;
 
 beforeAll(async () => {
-    await connect();
+    await connectDB();
 });
 
 describe('App', function () {
