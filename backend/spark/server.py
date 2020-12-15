@@ -93,7 +93,7 @@ def likeVideo(uid, profile, vid):
     saveProfileInfo(result, profile_path)
 
 
-def dislikeVideo(uid, profile, vid):
+def unlikeVideo(uid, profile, vid):
     profile_path = f'hdfs:///home/users/{uid}/profiles/{profile}'
     # Check if path exists
     path_exists = checkPath(profile_path)
@@ -323,7 +323,7 @@ def getListedVideos(uid, profile):
 # API Routes
 app = flask.Flask(__name__)
 CORS(app)
-app.config["DEBUG"] = True
+app.config["DEBUG"] = False
 
 
 @app.route('/', methods=['GET'])
@@ -331,25 +331,21 @@ def home():
     return '<h1>results</h1>'
 
 
-@app.route('/api/like-video', methods=['POST'])
+@app.route('/api/update-video-like', methods=['POST'])
 def like_video():
     # Expect record to contain uid and vid
     record = json.loads(request.data)
     print(record)
     uid = record['uid']
     vid = record['vid']
-    likeVideo(uid, 'default', vid)
-    return jsonify({'result': True})
-
-
-@app.route('/api/unlike-video', methods=['POST'])
-def dislike_video():
-    # Expect record to contain uid and vid
-    record = json.loads(request.data)
-    print(record)
-    uid = record['uid']
-    vid = record['vid']
-    dislikeVideo(uid, 'default', vid)
+    increment = record['increment']
+    if increment:
+        likeVideo(uid, 'default', vid)
+    else:
+        unlikeVideo(uid, 'default', vid)
+    # TODO Check if already liked
+    requests.post(
+        'http://localhost:3001/video/update-likes', {'vid': vid, 'increment': increment})
     return jsonify({'result': True})
 
 
@@ -383,6 +379,9 @@ def view_video():
     uid = record['uid']
     vid = record['vid']
     viewVideo(uid, 'default', vid)
+    # TODO Check if already viewed, if not don't update pg
+    requests.post(
+        'http://localhost:3001/video/count-view', {'vid': vid})
     return jsonify({'result': True})
 
 
@@ -395,10 +394,10 @@ def get_liked_videos():
     vids = getLikedVideos(uid, 'default')
     results = []
     for vid in vids:
-        result = dict()
-        result['vid'] = vid
-        result['url'] = f'http://13.77.174.221:9864/webhdfs/v1/home/videos/{vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0'
-        results.append(result)
+        result = requests.post(
+            'http://localhost:3001/video/metadata', {'vid': vid})
+        print(json.loads(result.content))
+        results.append(json.loads(result.content))
     return jsonify(results)
 
 
@@ -411,10 +410,10 @@ def get_viewed_videos():
     vids = getViewedVideos(uid, 'default')
     results = []
     for vid in vids:
-        result = dict()
-        result['vid'] = vid
-        result['url'] = f'http://13.77.174.221:9864/webhdfs/v1/home/videos/{vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0'
-        results.append(result)
+        result = requests.post(
+            'http://localhost:3001/video/metadata', {'vid': vid})
+        print(json.loads(result.content))
+        results.append(json.loads(result.content))
     return jsonify(results)
 
 
