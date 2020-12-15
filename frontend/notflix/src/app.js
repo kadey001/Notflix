@@ -75,13 +75,27 @@ const videoReducer = (state, action) => {
       localStorage.setItem("listedVideos", JSON.stringify(action.payload.listedVideos));
       return {
         ...state,
-        listedVideos: action.payload.likedVideos
+        listedVideos: action.payload.listedVideos
+      }
+    case "REMOVE FROM LIST":
+      const updatedList = [];
+      for (let i = 0; i < state.listedVideos.length; i++) {
+        if (state.listedVideos[i].vid !== action.payload.vid) {
+          updatedList.push(state.listedVideos[i]);
+        }
+      }
+      // console.log('Updated List:', updatedList)
+      localStorage.setItem("listedVideos", JSON.stringify(updatedList));
+      // console.log('Local Storage Updated')
+      return {
+        ...state,
+        listedVideos: updatedList
       }
     case "UPDATE GENRES":
       localStorage.setItem("genres", JSON.stringify(action.payload.genres));
       return {
         ...state,
-        genres: action.payload.likedVideos
+        genres: action.payload.genres
       }
     case "CLEAR":
       localStorage.clear();

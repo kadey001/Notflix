@@ -1,5 +1,6 @@
 /** @jsxFrag React.Fragment */
 import React, { useContext, useEffect, useState } from "react";
+import axios from 'axios';
 import { css, jsx } from "@emotion/react";
 import { Button, Loader } from "semantic-ui-react";
 import { useHistory } from "react-router-dom";
@@ -11,6 +12,7 @@ import { addToList, removeFromList, updateVideoLikes, updateVideoDislikes } from
  * @function Overview
  */
 const Overview = (props) => {
+  // const abortController = new AbortController();
   const [inList, setInList] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false);
@@ -142,7 +144,6 @@ const Overview = (props) => {
     setLoading(true);
     addToList(auth.state.uid, props.metadata.vid)
       .then((result) => {
-        setInList(true);
         setLoading(false);
         // Update listed videos context
         const listedVideos = video.state.listedVideos;
@@ -155,10 +156,14 @@ const Overview = (props) => {
             listedVideos: listedVideos,
           },
         });
+        setInList(true);
       })
       .catch((err) => {
-        console.error(err);
-        setLoading(false);
+        if (axios.isCancel(err)) {
+        } else {
+          console.error(err);
+          setLoading(false);
+        }
       });
   };
 
@@ -167,22 +172,14 @@ const Overview = (props) => {
     setLoading(true);
     removeFromList(auth.state.uid, props.metadata.vid)
       .then((result) => {
-        setInList(false);
         setLoading(false);
-        // Update listed videos context
-        const listedVideos = video.state.listedVideos;
-        const updatedList = [];
-        for (let i = 0; i < listedVideos.length; i++) {
-          if (listedVideos[i].vid !== props.metadata.vid) {
-            updatedList.push(listedVideos[i]);
-          }
-        }
         video.dispatch({
-          type: "UPDATE LISTED",
+          type: "REMOVE FROM LIST",
           payload: {
-            listedVideos: listedVideos,
-          },
-        });
+            vid: props.metadata.vid
+          }
+        })
+        setInList(false);
       })
       .catch((err) => {
         console.error(err);
@@ -191,17 +188,15 @@ const Overview = (props) => {
   };
 
   useEffect(() => {
-    const listedVideos = video.state.listedVideos;
-    if (!listedVideos) return;
+    let listedVideos = video.state.listedVideos;
+    if (!listedVideos) listedVideos = [];
     for (let i = 0; i < listedVideos.length; i++) {
       if (listedVideos[i].vid === props.metadata.vid) {
         setInList(true);
       }
     }
-  }, []);
-  useEffect(() => {
-    const likedVideos = video.state.likedVideos;
-    if (!likedVideos) return;
+    let likedVideos = video.state.likedVideos;
+    if (!likedVideos) likedVideos = [];
     for (let i = 0; i < likedVideos.length; i++) {
       if (likedVideos[i].vid === props.metadata.vid) {
         setIsLiked(true);

@@ -61,7 +61,7 @@ const MovieRows = ({ category, setActive, setMetadata }) => {
         break;
       case "List":
         const listedVideos = state.listedVideos;
-        if (!listedVideos) return;
+        if (!listedVideos) { console.log('Undefined Listed Vids'); return };
         setMovies(listedVideos);
         break;
       default:
@@ -79,6 +79,13 @@ const MovieRows = ({ category, setActive, setMetadata }) => {
           });
     }
   }, []);
+
+  useEffect(() => {
+    if (category !== 'List') return;
+    const listedVideos = state.listedVideos;
+    if (!listedVideos) return;
+    setMovies(listedVideos);
+  }, [state.listedVideos]);
 
   const openCard = (metadata) => {
     // console.log("Metadata: ", metadata);
