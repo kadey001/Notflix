@@ -52,6 +52,7 @@ const authReducer = (state, action) => {
 const videoInitialState = {
   likedVideos: JSON.parse(localStorage.getItem("likedVideos")),
   listedVideos: JSON.parse(localStorage.getItem("listedVideos")),
+  genres: JSON.parse(localStorage.getItem("genres"))
 };
 const videoReducer = (state, action) => {
   switch (action.type) {
@@ -78,12 +79,20 @@ const videoReducer = (state, action) => {
         ...state,
         listedVideos: action.payload.likedVideos
       }
+    case "UPDATE GENRES":
+      console.log("UPDATE: ", action.payload);
+      localStorage.setItem("genres", JSON.stringify(action.payload.genres));
+      return {
+        ...state,
+        genres: action.payload.likedVideos
+      }
     case "CLEAR":
       localStorage.clear();
       return {
         ...state,
         likedVideos: null,
-        listedVideos: null
+        listedVideos: null,
+        genres: null
       }
   }
 };
