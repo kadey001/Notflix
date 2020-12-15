@@ -8,7 +8,6 @@ import {
   Logo,
   ButtonLink2,
   Link,
-  Group,
 } from "./styles/header";
 
 export default function Header({ bg = true, children, ...restProps }) {

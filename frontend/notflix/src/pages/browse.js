@@ -54,11 +54,9 @@ export default function Browse() {
   }, [category]);
 
   useEffect(() => {
-    console.log("State: ", state);
-    // Update listed vids + liked vids
+    // console.log("State: ", state);
     getList(auth.state.uid)
       .then((result) => {
-        console.log(result);
         dispatch({
           type: "UPDATE",
           payload: {
@@ -71,7 +69,6 @@ export default function Browse() {
         console.error(err);
       });
     getLiked(auth.state.uid).then((result) => {
-      console.log(result);
       dispatch({
         type: "UPDATE",
         payload: {
@@ -102,12 +99,13 @@ export default function Browse() {
             pos={bottom}
             setActive={setActive}
             metadata={metadata}
+            top={bottom + window.scrollY}
           />
           <Footer />
         </>
       ) : (
-        <Redirect to="/" />
-      )}
+          <Redirect to="/" />
+        )}
     </div>
   );
 }

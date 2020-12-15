@@ -6,7 +6,6 @@ export const getTop = () => {
 
 // genres is object of booleans
 export const getGenre = (genres) => {
-  console.log(genres);
   const config = {
     headers: {
       "Content-Type": "application/json",
@@ -20,26 +19,24 @@ export const getGenre = (genres) => {
 }
 
 export const searchVideos = (keyword) => {
+  return axios.get(
+    `http://13.77.174.221:3001/video/search?keyword=${keyword}`
+  );
+}
+
+export const countView = (vid) => {
   const config = {
     headers: {
       "Content-Type": "application/json",
     },
   };
-  return axios.post(
-    'http://13.77.174.221:3001/video/filter-genre',
-    {
-      keyword: keyword
-    },
+  return axios.post(`http://13.77.174.221:3001/video/count-view`,
+    { vid: vid },
     config
   );
 }
 
-export const countView = (vid) => {
-  return axios.get(`http://13.77.174.221:3001/video/filter-genre?${vid}`);
-}
-
 export const addToList = (uid, vid) => {
-  console.log(uid, vid);
   const config = {
     headers: {
       "Content-Type": "application/json",
@@ -53,7 +50,6 @@ export const addToList = (uid, vid) => {
 }
 
 export const getList = (uid) => {
-  console.log(uid);
   const config = {
     headers: {
       "Content-Type": "application/json",
@@ -67,7 +63,6 @@ export const getList = (uid) => {
 }
 
 export const getLiked = (uid) => {
-  console.log(uid);
   const config = {
     headers: {
       "Content-Type": "application/json",
@@ -81,7 +76,6 @@ export const getLiked = (uid) => {
 }
 
 export const getViewed = (uid) => {
-  console.log(uid);
   const config = {
     headers: {
       "Content-Type": "application/json",
@@ -94,23 +88,105 @@ export const getViewed = (uid) => {
   );
 }
 
-// Updaters
-export const likeVideo = (uid, vid) => {
-  console.log(uid);
+export const addComment = (vid, uid, username, comment) => {
   const config = {
     headers: {
       "Content-Type": "application/json",
     },
   };
   return axios.post(
-    'http://13.77.174.221:3002/api/like-video',
+    'http://13.77.174.221:3001/video/comment',
+    {
+      uid: uid,
+      vid: vid,
+      username: username,
+      comment: comment,
+    },
+    config
+  );
+}
+
+export const getComments = (vid) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  return axios.post(
+    'http://13.77.174.221:3001/video/get-comments',
+    { vid: vid },
+    config
+  );
+}
+
+// Updaters
+export const updateVideoLikes = (uid, vid, increment) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  return axios.post(
+    'http://13.77.174.221:3002/api/update-video-like',
+    { uid: uid, vid: vid, increment },
+    config
+  );
+}
+
+// TODO Update to check for previous dislikes first
+export const updateVideoDislikes = (uid, vid, increment) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  return axios.post(
+    'http://13.77.174.221:3001/video/update-dislikes',
+    { uid: uid, vid: vid, increment },
+    config
+  );
+}
+
+export const updateCommentLikes = (cid, uid, increment) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  return axios.post(
+    'http://13.77.174.221:3001/video/update-comment-likes',
+    { cid: cid, uid: uid, increment },
+    config
+  );
+}
+
+export const updateCommentDislikes = (cid, uid, increment) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  return axios.post(
+    'http://13.77.174.221:3001/video/update-comment-dislikes',
+    { cid: cid, uid: uid, increment },
+    config
+  );
+}
+
+export const getCommentLikesDislikes = (uid, vid) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  return axios.post(
+    'http://13.77.174.221:3001/video/get-comment-likes-dislikes',
     { uid: uid, vid: vid },
     config
   );
 }
 
 export const removeFromList = (uid, vid) => {
-  console.log(uid, vid);
   const config = {
     headers: {
       "Content-Type": "application/json",

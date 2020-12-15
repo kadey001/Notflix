@@ -12,6 +12,7 @@ import {
 import * as ROUTES from "./constants/routes";
 import { AuthContext } from './context/auth';
 import { VideoContext } from './context/video';
+import SearchResults from "./pages/searchResults";
 
 const authInitialState = {
   isAuthenticated: JSON.parse(localStorage.getItem("authenticated")),
@@ -22,7 +23,7 @@ const authInitialState = {
 const authReducer = (state, action) => {
   switch (action.type) {
     case "LOGIN":
-      console.log("LOGIN: ", action.payload.uid, action.payload.username);
+      // console.log("LOGIN: ", action.payload.uid, action.payload.username);
       localStorage.setItem("uid", JSON.stringify(action.payload.uid));
       localStorage.setItem("username", JSON.stringify(action.payload.username));
       localStorage.setItem("token", JSON.stringify(action.payload.token));
@@ -51,11 +52,12 @@ const authReducer = (state, action) => {
 const videoInitialState = {
   likedVideos: JSON.parse(localStorage.getItem("likedVideos")),
   listedVideos: JSON.parse(localStorage.getItem("listedVideos")),
+  genres: JSON.parse(localStorage.getItem("genres"))
 };
 const videoReducer = (state, action) => {
   switch (action.type) {
+    // console.log("UPDATE: ", action.type, action.payload);
     case "UPDATE":
-      console.log("UPDATE: ", action.payload);
       localStorage.setItem("likedVideos", JSON.stringify(action.payload.likedVideos));
       localStorage.setItem("listedVideos", JSON.stringify(action.payload.listedVideos));
       return {
@@ -64,25 +66,63 @@ const videoReducer = (state, action) => {
         listedVideos: action.payload.listedVideos
       }
     case "UPDATE LIKED":
-      console.log("UPDATE: ", action.payload);
       localStorage.setItem("likedVideos", JSON.stringify(action.payload.likedVideos));
       return {
         ...state,
         likedVideos: action.payload.likedVideos
       }
+    case "ADD LIKED":
+      const updatedLikedListAdded = [...state.likedVideos, action.payload.videoMetadata];
+      localStorage.setItem("likedVideos", JSON.stringify(updatedLikedListAdded));
+      return {
+        ...state,
+        likedVideos: updatedLikedListAdded
+      }
+    case "REMOVE LIKED":
+      const updatedLikedListRemoved = [];
+      for (let i = 0; i < state.likedVideos.length; i++) {
+        if (state.likedVideos[i].vid !== action.payload.vid) {
+          updatedLikedListRemoved.push(state.likedVideos[i]);
+        }
+      }
+      localStorage.setItem("likedVideos", JSON.stringify(updatedLikedListRemoved));
+      return {
+        ...state,
+        likedVideos: updatedLikedListRemoved
+      }
     case "UPDATE LISTED":
-      console.log("UPDATE: ", action.payload);
       localStorage.setItem("listedVideos", JSON.stringify(action.payload.listedVideos));
       return {
         ...state,
-        listedVideos: action.payload.likedVideos
+        listedVideos: action.payload.listedVideos
+      }
+    case "REMOVE FROM LIST":
+      const updatedList = [];
+      for (let i = 0; i < state.listedVideos.length; i++) {
+        if (state.listedVideos[i].vid !== action.payload.vid) {
+          updatedList.push(state.listedVideos[i]);
+        }
+      }
+      // console.log('Updated List:', updatedList)
+      localStorage.setItem("listedVideos", JSON.stringify(updatedList));
+      // console.log('Local Storage Updated')
+      return {
+        ...state,
+        listedVideos: updatedList
+      }
+    case "UPDATE GENRES":
+      localStorage.setItem("genres", JSON.stringify(action.payload.genres));
+      return {
+        ...state,
+        genres: action.payload.genres
       }
     case "CLEAR":
       localStorage.clear();
       return {
         ...state,
         likedVideos: null,
-        listedVideos: null
+        listedVideos: null,
+        genres: null
       }
   }
 };
@@ -113,8 +153,11 @@ export default function App() {
           <Route exact path="/upload">
             <Upload />
           </Route>
-          <Route exact path="/subscriptions">
+          {/* <Route exact path="/subscriptions">
             <Subscriptions />
+          </Route> */}
+          <Route exact path="/search">
+            <SearchResults />
           </Route>
         </Router>
       </VideoContext.Provider>

@@ -52,7 +52,7 @@ const MovieRows = ({ category, setActive, setMetadata }) => {
       case "Top":
         getTop()
           .then((result) => {
-            console.log("Top Results: ", result);
+            // console.log("Top Results: ", result);
             setMovies(result.data);
           })
           .catch((err) => {
@@ -61,14 +61,14 @@ const MovieRows = ({ category, setActive, setMetadata }) => {
         break;
       case "List":
         const listedVideos = state.listedVideos;
-        if (!listedVideos) return;
+        if (!listedVideos) { console.log('Undefined Listed Vids'); return };
         setMovies(listedVideos);
         break;
       default:
         const genres = setGenres(category);
         getGenre(genres)
           .then((result) => {
-            console.log(result.data);
+            // console.log(result.data);
             setMovies(result.data);
           })
           .catch((err) => {
@@ -80,18 +80,26 @@ const MovieRows = ({ category, setActive, setMetadata }) => {
     }
   }, []);
 
+  useEffect(() => {
+    if (category !== 'List') return;
+    const listedVideos = state.listedVideos;
+    if (!listedVideos) return;
+    setMovies(listedVideos);
+  }, [state.listedVideos]);
+
   const openCard = (metadata) => {
-    console.log("Metadata: ", metadata);
+    // console.log("Metadata: ", metadata);
     setMetadata({
       vid: metadata.vid,
       title: metadata.title,
       description: metadata.description,
-      length: metadata.length,
+      length: metadata.filmlength,
       likes: metadata.likes,
       dislikes: metadata.dislikes,
       views: metadata.views,
       genres: metadata.genres,
       img: metadata.img,
+      released: metadata.released
     });
   };
 
@@ -159,7 +167,6 @@ const MovieRows = ({ category, setActive, setMetadata }) => {
                       openCard(video);
                     }}
                   />
-                  <Icon type="thumbs-up" />
                 </div>
               )}
               <img src={video.img} />

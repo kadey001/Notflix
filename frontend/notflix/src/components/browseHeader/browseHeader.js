@@ -1,21 +1,31 @@
 /** @jsx jsx */
+/** @jsxFrag React.Fragment */
 import React, { useState, useEffect, forwardRef, useContext } from "react";
 import { css, jsx } from "@emotion/react";
 import Icon from "../../components/Icon/Icon";
 import { Button } from "semantic-ui-react";
 import { useHistory } from "react-router-dom";
 import { AuthContext } from "../../context/auth";
+import { searchVideos } from "../api/videos";
+import { VideoContext } from "../../context/video";
 
 const leftLinks = ["Upload", "Subscriptions"];
 
 const BrowseHeader = forwardRef((props, ref) => {
   const [scrolled, setScrolled] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [searchText, setSearchText] = useState("");
   const history = useHistory();
-  const { dispatch } = useContext(AuthContext);
+  const auth = useContext(AuthContext);
+  const video = useContext(VideoContext);
 
   const handleSignOut = () => {
-    dispatch({
+    auth.dispatch({
       type: "LOGOUT",
+    });
+    video.dispatch({
+      type: "CLEAR"
     });
     history.push("/");
   };
@@ -30,6 +40,26 @@ const BrowseHeader = forwardRef((props, ref) => {
       window.removeEventListener("scroll", onScroll);
     };
   }, []);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setSearching(true);
+    // TODO parse and do search on each keyword, concat the results
+    searchVideos(searchText)
+      .then((result) => {
+        console.log(result.data);
+        history.push("/search", result.data);
+      })
+      .catch((err) => {
+        console.error(err);
+        setSearching(false);
+      });
+  };
+
+  const toggleSearch = (e) => {
+    e.preventDefault();
+    setShowSearch(!showSearch);
+  };
 
   return (
     <nav
@@ -66,16 +96,27 @@ const BrowseHeader = forwardRef((props, ref) => {
           </a>
         </li>
 
-        <li>
+        {/* <li>
           <a href="/subscriptions">
             <p> Subscriptions </p>
           </a>
-        </li>
+        </li> */}
       </ul>
 
       <ul className="right">
         <li>
-          <Icon type="search" />
+          <form onSubmit={handleSearch}>
+            <Icon type="search" onClick={toggleSearch} />
+            {showSearch ? (
+              <input
+                type="text"
+                value={searchText}
+                onChange={({ target }) => setSearchText(target.value)}
+              />
+            ) : (
+                <></>
+              )}
+          </form>
         </li>
         <li>
           <Button

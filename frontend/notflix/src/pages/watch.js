@@ -1,18 +1,44 @@
-import React, { useState, useEffect } from "react";
+import React, { useReducer } from "react";
 import Footer from "../components/footer/footer";
 import PlayerHeader from "../components/playerHeader/playerHeader";
 import { Global, css } from "@emotion/react";
 import Player from "../components/player/player";
-import HeaderJumbotron from "../components/headerJumbotron/headerJumbotron";
 import AddComment from "../containers/comments/addComment/addComment";
+import Comments from "../containers/comments/comment/comment";
+import { useParams } from "react-router-dom";
+
+const initialWatchState = {
+  refresh: true,
+}
+
+const watchReducer = (state, action) => {
+  switch (action.type) {
+    case "REFRESH":
+      return {
+        ...state,
+        refresh: true
+      };
+    case "REFRESHED":
+      return {
+        ...state,
+        refresh: false
+      };
+    default:
+      return state;
+  }
+};
 
 export default function VideoPlayer() {
+  const params = useParams();
+  const [watchState, watchDispatch] = useReducer(watchReducer, initialWatchState);
+
   return (
     <>
       <Global styles={GlobalCSS} />
       <PlayerHeader />
       <Player />
-      <AddComment />
+      <AddComment vid={params.vid} reducer={{ state: watchState, dispatch: watchDispatch }} />
+      <Comments vid={params.vid} reducer={{ state: watchState, dispatch: watchDispatch }} />
     </>
   );
 }
