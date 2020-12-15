@@ -186,7 +186,6 @@ const Comments = ({ vid, reducer }) => {
                   <i
                     style={{ padding: "5px", color: "grey" }}
                     className={`Icon fa fa-thumbs-down`}
-                    onClick={() => { handleDislike(comment.cid, true) }}
                   />
               }
               <span style={{ alignSelf: "center" }}> {comment.dislikes}</span>
