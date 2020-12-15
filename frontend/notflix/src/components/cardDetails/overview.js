@@ -5,7 +5,7 @@ import { Button, Loader } from "semantic-ui-react";
 import { useHistory } from "react-router-dom";
 import { AuthContext } from "../../context/auth";
 import { VideoContext } from "../../context/video";
-import { addToList, removeFromList, likeVideo } from "../api/videos";
+import { addToList, removeFromList, updateVideoLikes, updateVideoDislikes } from "../api/videos";
 
 /**
  * @function Overview
@@ -20,16 +20,17 @@ const Overview = (props) => {
   const history = useHistory();
   const auth = useContext(AuthContext);
   const video = useContext(VideoContext);
-  console.log("Props: ", props);
-  console.log("Video State: ", video.state);
+  // console.log("Props: ", props);
+  // console.log("Video State: ", video.state);
 
   const likeClick = (e) => {
     e.preventDefault();
     setLoadingLike(true);
     console.log("Add to liked");
-    likeVideo(auth.state.uid, props.metadata.vid)
+    setIsLiked(true);
+    props.metadata.likes += 1;
+    updateVideoLikes(auth.state.uid, props.metadata.vid, true)
       .then((result) => {
-        setIsLiked(true);
         setLoadingLike(false);
         // Update liked videos context
         const likedVideos = video.state.likedVideos;
@@ -42,6 +43,7 @@ const Overview = (props) => {
             likedVideos: likedVideos,
           },
         });
+        setLoading(false);
       })
       .catch((err) => {
         console.error(err);
@@ -52,30 +54,92 @@ const Overview = (props) => {
     e.preventDefault();
     setLoadingLike(true);
     console.log("Remove from liked");
-    removeLikeClick(auth.state.uid, props.metadata.vid)
+    setIsLiked(false);
+    props.metadata.likes -= 1;
+    updateVideoLikes(auth.state.uid, props.metadata.vid, false)
       .then((result) => {
-        setIsLiked(false);
         setLoadingLike(false);
         // Update liked videos context
         const likedVideos = video.state.likedVideos;
-        const updatedLike = [];
+        const updatedLikedVideos = [];
         for (let i = 0; i < likedVideos.length; i++) {
           if (likedVideos[i].vid !== props.metadata.vid) {
-            updatedLike.push(likedVideos[i]);
+            updatedLikedVideos.push(likedVideos[i]);
           }
         }
         video.dispatch({
           type: "UPDATE LIKED",
           payload: {
-            likedVideos: likedVideos,
+            likedVideos: updatedLikedVideos,
           },
         });
+        setLoading(false);
       })
       .catch((err) => {
         console.error(err);
         setLoading(false);
       });
   };
+
+  // TODO implement dislikes
+  // const dislikeClick = (e) => {
+  //   e.preventDefault();
+  //   setLoadingLike(true);
+  //   console.log("Add to liked");
+  //   setIsLiked(true);
+  //   props.metadata.likes += 1;
+  //   updateVideoDislikes(auth.state.uid, props.metadata.vid, true)
+  //     .then((result) => {
+  //       setLoadingLike(false);
+  //       // Update liked videos context
+  //       const likedVideos = video.state.likedVideos;
+  //       likedVideos.push({
+  //         ...props.metadata,
+  //       });
+  //       video.dispatch({
+  //         type: "UPDATE LIKED",
+  //         payload: {
+  //           likedVideos: likedVideos,
+  //         },
+  //       });
+  //       setLoading(false);
+  //     })
+  //     .catch((err) => {
+  //       console.error(err);
+  //       setLoading(false);
+  //     });
+  // };
+
+  // const removeDislikeClick = (e) => {
+  //   e.preventDefault();
+  //   setLoadingLike(true);
+  //   console.log("Remove from liked");
+  //   setIsLiked(false);
+  //   props.metadata.likes -= 1;
+  //   updateVideoDislikes(auth.state.uid, props.metadata.vid, false)
+  //     .then((result) => {
+  //       setLoadingLike(false);
+  //       // Update liked videos context
+  //       const likedVideos = video.state.likedVideos;
+  //       const updatedLikedVideos = [];
+  //       for (let i = 0; i < likedVideos.length; i++) {
+  //         if (likedVideos[i].vid !== props.metadata.vid) {
+  //           updatedLikedVideos.push(likedVideos[i]);
+  //         }
+  //       }
+  //       video.dispatch({
+  //         type: "UPDATE LIKED",
+  //         payload: {
+  //           likedVideos: updatedLikedVideos,
+  //         },
+  //       });
+  //       setLoading(false);
+  //     })
+  //     .catch((err) => {
+  //       console.error(err);
+  //       setLoading(false);
+  //     });
+  // };
 
   const addList = (e) => {
     e.preventDefault();
@@ -156,11 +220,11 @@ const Overview = (props) => {
       <p>description: {props.metadata.description}</p>
       <p>length: {props.metadata.length} min</p>
       <p>likes: {props.metadata.likes}</p>
-      <p>dislikes: {props.metadata.dislikes}</p>
+      {/* <p>dislikes: {props.metadata.dislikes}</p> */}
       <p>views: {props.metadata.views}</p>
       <Button
         variant="contained"
-        onClick={() => history.push(`/watch/${props.metadata.vid}`)}
+        onClick={() => history.push(`/watch/${props.metadata.vid}`, { vid: props.metadata.vid })}
       >
         Play
       </Button>
@@ -169,37 +233,37 @@ const Overview = (props) => {
           {loading ? <>Loading...</> : <>Remove From List</>}
         </Button>
       ) : (
-        <Button disabled={loading} onClick={addList}>
-          {loading ? <>Loading...</> : <>Add to List</>}
-        </Button>
-      )}
+          <Button disabled={loading} onClick={addList}>
+            {loading ? <>Loading...</> : <>Add to List</>}
+          </Button>
+        )}
       {isLiked ? (
         <i
           style={{ color: "red" }}
-          disabled={loadingLike}
-          onClick={likeClick}
+          disabled={loadingLike || isLiked}
+          onClick={removeLikeClick}
           className={`Icon fa fa-thumbs-up`}
         />
       ) : (
-        <i
-          disabled={loadingLike}
-          onClick={likeClick}
-          className={`Icon fa fa-thumbs-up`}
-        />
-      )}
-      {isDisliked ? (
+          <i
+            disabled={loadingLike}
+            onClick={likeClick}
+            className={`Icon fa fa-thumbs-up`}
+          />
+        )}
+      {/* {isDisliked ? (
         <i
           style={{ padding: 15 }}
           disabled={loadingLike}
           className={`Icon fa fa-thumbs-down`}
         />
       ) : (
-        <i
-          style={{ padding: 15 }}
-          disabled={loadingLike}
-          className={`Icon fa fa-thumbs-down`}
-        />
-      )}
+          <i
+            style={{ padding: 15 }}
+            disabled={loadingLike}
+            className={`Icon fa fa-thumbs-down`}
+          />
+        )} */}
     </div>
   );
 };
