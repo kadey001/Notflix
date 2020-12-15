@@ -20,17 +20,8 @@ export const getGenre = (genres) => {
 }
 
 export const searchVideos = (keyword) => {
-  const config = {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  return axios.post(
-    'http://13.77.174.221:3001/video/filter-genre',
-    {
-      keyword: keyword
-    },
-    config
+  return axios.get(
+    `http://13.77.174.221:3001/video/search?keyword=${keyword}`
   );
 }
 
@@ -39,7 +30,6 @@ export const countView = (vid) => {
 }
 
 export const addToList = (uid, vid) => {
-  console.log(uid, vid);
   const config = {
     headers: {
       "Content-Type": "application/json",
@@ -53,7 +43,6 @@ export const addToList = (uid, vid) => {
 }
 
 export const getList = (uid) => {
-  console.log(uid);
   const config = {
     headers: {
       "Content-Type": "application/json",
@@ -67,7 +56,6 @@ export const getList = (uid) => {
 }
 
 export const getLiked = (uid) => {
-  console.log(uid);
   const config = {
     headers: {
       "Content-Type": "application/json",
@@ -81,7 +69,6 @@ export const getLiked = (uid) => {
 }
 
 export const getViewed = (uid) => {
-  console.log(uid);
   const config = {
     headers: {
       "Content-Type": "application/json",
@@ -94,9 +81,12 @@ export const getViewed = (uid) => {
   );
 }
 
+export const getComments = (vid) => {
+
+}
+
 // Updaters
 export const likeVideo = (uid, vid) => {
-  console.log(uid);
   const config = {
     headers: {
       "Content-Type": "application/json",
@@ -110,7 +100,6 @@ export const likeVideo = (uid, vid) => {
 }
 
 export const removeFromList = (uid, vid) => {
-  console.log(uid, vid);
   const config = {
     headers: {
       "Content-Type": "application/json",
