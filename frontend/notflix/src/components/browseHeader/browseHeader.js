@@ -5,11 +5,15 @@ import Icon from "../../components/Icon/Icon";
 import { Button } from "semantic-ui-react";
 import { useHistory } from "react-router-dom";
 import { AuthContext } from "../../context/auth";
+import { searchVideos } from "../api/videos";
 
 const leftLinks = ["Upload", "Subscriptions"];
 
 const BrowseHeader = forwardRef((props, ref) => {
   const [scrolled, setScrolled] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [searchText, setSearchText] = useState('');
   const history = useHistory();
   const { dispatch } = useContext(AuthContext);
 
@@ -30,6 +34,24 @@ const BrowseHeader = forwardRef((props, ref) => {
       window.removeEventListener("scroll", onScroll);
     };
   }, []);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setSearching(true);
+    // TODO parse and do search on each keyword, concat the results
+    searchVideos(searchText).then((result) => {
+      console.log(result.data);
+      history.push('/search', result.data);
+    }).catch((err) => {
+      console.error(err);
+      setSearching(false);
+    });
+  }
+
+  const toggleSearch = (e) => {
+    e.preventDefault();
+    setShowSearch(!showSearch);
+  }
 
   return (
     <nav
@@ -75,7 +97,17 @@ const BrowseHeader = forwardRef((props, ref) => {
 
       <ul className="right">
         <li>
-          <Icon type="search" />
+          <form onSubmit={handleSearch}>
+            <Icon type="search" onClick={toggleSearch} />
+            {showSearch ?
+              <input type='text'
+                value={searchText}
+                onChange={({ target }) => setSearchText(target.value)}
+              />
+              :
+              <></>
+            }
+          </form>
         </li>
         <li>
           <Button

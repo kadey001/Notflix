@@ -12,6 +12,7 @@ import {
 import * as ROUTES from "./constants/routes";
 import { AuthContext } from './context/auth';
 import { VideoContext } from './context/video';
+import SearchResults from "./pages/searchResults";
 
 const authInitialState = {
   isAuthenticated: JSON.parse(localStorage.getItem("authenticated")),
@@ -115,6 +116,9 @@ export default function App() {
           </Route>
           <Route exact path="/subscriptions">
             <Subscriptions />
+          </Route>
+          <Route exact path="/search">
+            <SearchResults />
           </Route>
         </Router>
       </VideoContext.Provider>
