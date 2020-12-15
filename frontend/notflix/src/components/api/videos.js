@@ -82,18 +82,80 @@ export const getViewed = (uid) => {
 }
 
 export const getComments = (vid) => {
-
-}
-
-// Updaters
-export const likeVideo = (uid, vid) => {
   const config = {
     headers: {
       "Content-Type": "application/json",
     },
   };
   return axios.post(
-    'http://13.77.174.221:3002/api/like-video',
+    'http://13.77.174.221:3001/video/get-comments',
+    { vid: vid },
+    config
+  );
+}
+
+// Updaters
+export const updateVideoLikes = (uid, vid, increment) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  return axios.post(
+    'http://13.77.174.221:3002/api/update-video-like',
+    { uid: uid, vid: vid, increment },
+    config
+  );
+}
+
+// TODO Update to check for previous dislikes first
+export const updateVideoDislikes = (uid, vid, increment) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  return axios.post(
+    'http://13.77.174.221:3001/video/update-dislikes',
+    { uid: uid, vid: vid, increment },
+    config
+  );
+}
+
+export const updateCommentLikes = (cid, uid, increment) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  return axios.post(
+    'http://13.77.174.221:3001/video/update-comment-likes',
+    { cid: cid, uid: uid, increment },
+    config
+  );
+}
+
+export const updateCommentDislikes = (cid, uid, increment) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  return axios.post(
+    'http://13.77.174.221:3001/video/update-comment-dislikes',
+    { cid: cid, uid: uid, increment },
+    config
+  );
+}
+
+export const getCommentLikesDislikes = (uid, vid) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  return axios.post(
+    'http://13.77.174.221:3001/video/get-comment-likes-dislikes',
     { uid: uid, vid: vid },
     config
   );

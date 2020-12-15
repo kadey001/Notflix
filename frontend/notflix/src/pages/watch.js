@@ -1,20 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Footer from "../components/footer/footer";
 import PlayerHeader from "../components/playerHeader/playerHeader";
 import { Global, css } from "@emotion/react";
 import Player from "../components/player/player";
-import HeaderJumbotron from "../components/headerJumbotron/headerJumbotron";
 import AddComment from "../containers/comments/addComment/addComment";
 import Comments from "../containers/comments/comment/comment";
+import { useParams } from "react-router-dom";
 
 export default function VideoPlayer() {
+  const params = useParams();
   return (
     <>
       <Global styles={GlobalCSS} />
       <PlayerHeader />
       <Player />
       <AddComment />
-      <Comments />
+      <Comments vid={params.vid} />
     </>
   );
 }
