@@ -58,7 +58,6 @@ export default function Browse() {
     // Update listed vids + liked vids
     getList(auth.state.uid)
       .then((result) => {
-        console.log(result);
         dispatch({
           type: "UPDATE",
           payload: {
@@ -71,7 +70,6 @@ export default function Browse() {
         console.error(err);
       });
     getLiked(auth.state.uid).then((result) => {
-      console.log(result);
       dispatch({
         type: "UPDATE",
         payload: {
@@ -107,8 +105,8 @@ export default function Browse() {
           <Footer />
         </>
       ) : (
-        <Redirect to="/" />
-      )}
+          <Redirect to="/" />
+        )}
     </div>
   );
 }
