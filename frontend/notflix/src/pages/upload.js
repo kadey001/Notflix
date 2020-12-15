@@ -21,6 +21,7 @@ async function addVideo(uploadData, videoFile, thumbnailFile) {
   formData.append("action", uploadData.action);
   formData.append("drama", uploadData.drama);
   formData.append("fantasy", uploadData.fantasy);
+  formData.append("documentary", uploadData.documentary)
   const config = {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -51,6 +52,7 @@ export default function Upload() {
     action: false,
     drama: false,
     fantasy: false,
+    documentary: false
   });
 
   console.log(startDate);
@@ -116,6 +118,13 @@ export default function Upload() {
       fantasy: !initialState.fantasy,
     }));
   };
+
+  const onChangeDocumentary = () => {
+    setUploadData((initialState) => ({
+      ...uploadData,
+      documentary: !initialState.documentary,
+    }));
+  }
 
   const onVideoChange = (e) => {
     setvideoFile(e.target.files[0]);
@@ -186,7 +195,7 @@ export default function Upload() {
               width: 314,
               backgroundColor: "#333",
               borderRadius: 4,
-              height: 50,
+              height: 60,
               justifyContent: "center",
             }}
           >
@@ -229,6 +238,14 @@ export default function Upload() {
                 onChange={onChangeFantasy}
               />
               Fantasy
+            </label>
+            <label className="label">
+              <input
+                className="check-box"
+                type="checkbox"
+                onChange={onChangeDocumentary}
+              />
+              Documentary
             </label>
           </div>
 
@@ -275,7 +292,6 @@ const colourStyles = {
     padding: 0,
   }),
 };
-
 const GlobalCSS = css`
   * {
     box-sizing: border-box;
