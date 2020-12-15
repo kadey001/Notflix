@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { getCommentLikesDislikes, getComments, updateCommentLikes, updateCommentDislikes } from "../../../components/api/videos";
 import { AuthContext } from "../../../context/auth";
 
-const Comments = ({ vid }) => {
+const Comments = ({ vid, reducer }) => {
   const auth = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [commentLikesDislikes, setCommentLikesDislikes] = useState(null);
@@ -117,9 +117,15 @@ const Comments = ({ vid }) => {
   }
 
   useEffect(() => {
-    refreshCommentLikesDislikes();
-    refreshComments();
-  }, []);
+    if (reducer.state.refresh === true) {
+      console.log('Refreshing', reducer.state)
+      refreshCommentLikesDislikes();
+      refreshComments();
+      reducer.dispatch({
+        type: 'REFRESHED'
+      });
+    }
+  }, [reducer.state]);
 
   return (
     <Wrapper>

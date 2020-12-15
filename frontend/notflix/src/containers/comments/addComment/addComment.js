@@ -1,17 +1,36 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import "./addComment.css";
+import { addComment } from '../../../components/api/videos';
 import { Form, Image, TextArea, Button } from "semantic-ui-react";
+import { AuthContext } from "../../../context/auth";
 
-export default function AddComment() {
+export default function AddComment({ vid, reducer }) {
+  const auth = useContext(AuthContext);
   const [value, setValue] = useState("");
-  const [hide, setHide] = useState(false);
+  const [loading, setLoading] = useState(false);
   console.log(value);
+
+  const handleComment = (e) => {
+    e.preventDefault();
+    console.log('Update Refresh')
+    setLoading(true);
+    addComment(vid, auth.state.uid, auth.state.username, value).then((response) => {
+      console.log(response);
+      setValue("");
+      reducer.dispatch({
+        type: 'REFRESH'
+      });
+      setLoading(false);
+    }).catch((err) => {
+      console.error(err);
+      setLoading(false);
+    });
+  }
 
   return (
     <div>
-      <Form>
+      <Form onSubmit={handleComment} disabled={loading}>
         <Form.TextArea
-          onClick={() => setHide(true)}
           style={commentConatiner}
           className="add-comment"
           value={value}
@@ -19,25 +38,23 @@ export default function AddComment() {
           placeholder="Add a comment"
         />
       </Form>
-      {hide && (
-        <div className="send-buttons">
-          <Button
-            onClick={() => {
-              setHide(false);
-              setValue("");
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            disabled
-            className={value != "" ? "send-button-enabled" : ""}
-          >
-            Comment
-          </Button>
-        </div>
-      )}
+      <div className="send-buttons">
+        <Button
+          onClick={() => {
+            setValue("");
+          }}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          disabled={loading}
+          className={value != "" ? "send-button-enabled" : ""}
+          onClick={handleComment}
+        >
+          Comment
+        </Button>
+      </div>
     </div>
   );
 }

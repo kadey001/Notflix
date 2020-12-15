@@ -81,6 +81,25 @@ export const getViewed = (uid) => {
   );
 }
 
+export const addComment = (vid, uid, username, comment) => {
+  console.log(vid, uid, username, comment);
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  return axios.post(
+    'http://13.77.174.221:3001/video/comment',
+    {
+      uid: uid,
+      vid: vid,
+      username: username,
+      comment: comment,
+    },
+    config
+  );
+}
+
 export const getComments = (vid) => {
   const config = {
     headers: {
