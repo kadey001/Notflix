@@ -130,50 +130,6 @@ export const updateUserToken = async (token: string, uid: string) => {
   }
 }
 
-
-// const comedyQuery = {
-//   text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
-//         (SELECT vid FROM Genres WHERE comedy = $1);`,
-//   values: [genres.comedy]
-// };
-// const actionQuery = {
-//   text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
-//         (SELECT vid FROM Genres WHERE action = $1);`,
-//   values: [genres.action]
-// };
-// const dramaQuery = {
-//   text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
-//         (SELECT vid FROM Genres WHERE drama = $1);`,
-//   values: [genres.drama]
-// };
-// const fantasyQuery = {
-//   text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
-//         (SELECT vid FROM Genres WHERE fantasy = $1);`,
-//   values: [genres.fantasy]
-// };
-// const horrorQuery = {
-//   text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
-//         (SELECT vid FROM Genres WHERE horror = $1);`,
-//   values: [genres.horror]
-// };
-// const documentaryQuery = {
-//   text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
-//         (SELECT vid FROM Genres WHERE documentary = $1);`,
-//   values: [genres.documentary]
-// };
-// const genreQueries = [
-//   client.query(comedyQuery),
-//   client.query(actionQuery),
-//   client.query(dramaQuery),
-//   client.query(fantasyQuery),
-//   client.query(horrorQuery),
-//   client.query(documentaryQuery)
-// ]
-// Promise.all(genreQueries).then((result) => {
-//   console.log(result);
-//   return result;
-// })
-
 const defaultGenres = {
   comedy: false,
   horror: false,
@@ -182,94 +138,6 @@ const defaultGenres = {
   fantasy: false,
   documentary: false,
 }
-
-// TODO Update to just get all genres since we need all of them anyways 
-// export const getGenres = async () => {
-//   try {
-//     const vids: Array<MetaData> = [];
-//     const comedyQuery = {
-//       text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
-//         (SELECT vid FROM Genres WHERE comedy = $1);`,
-//       values: [true]
-//     };
-//     const comedyResult = await client.query(comedyQuery);
-//     comedyResult.rows.forEach((video) => {
-//       vids.push({
-//         ...video,
-//         img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
-//         genres: genres
-//       });
-//     });
-//     const actionQuery = {
-//       text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
-//       (SELECT vid FROM Genres WHERE action = $1);`,
-//       values: [true]
-//     };
-//     const actionResult = await client.query(actionQuery);
-//     actionResult.rows.forEach((video) => {
-//       vids.push({
-//         ...video,
-//         img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
-//         genres: { ...defaultGenres, action: true }
-//       });
-//     });
-//     const dramaQuery = {
-//       text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
-//       (SELECT vid FROM Genres WHERE drama = $1);`,
-//       values: [true]
-//     };
-//     const dramaResult = await client.query(dramaQuery);
-//     dramaResult.rows.forEach((video) => {
-//       vids.push({
-//         ...video,
-//         img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
-//         genres: { ...defaultGenres, drama: true }
-//       });
-//     });
-//     const fantasyQuery = {
-//       text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
-//       (SELECT vid FROM Genres WHERE fantasy = $1);`,
-//       values: [true]
-//     };
-//     const fantasyResult = await client.query(fantasyQuery);
-//     fantasyResult.rows.forEach((video) => {
-//       vids.push({
-//         ...video,
-//         img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
-//         genres: { ...defaultGenres, fantasy: true }
-//       });
-//     });
-//     const horrorQuery = {
-//       text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
-//       (SELECT vid FROM Genres WHERE horror = $1);`,
-//       values: [true]
-//     };
-//     const horrorResult = await client.query(horrorQuery);
-//     horrorResult.rows.forEach((video) => {
-//       vids.push({
-//         ...video,
-//         img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
-//         genres: { ...defaultGenres, horror: true }
-//       });
-//     });
-//     const documentaryQuery = {
-//       text: `SELECT vid, title, filmlength, description, likes, dislikes, views, released FROM videos WHERE vid IN 
-//       (SELECT vid FROM Genres WHERE documentary = $1);`,
-//       values: [true]
-//     };
-//     const documentaryResult = await client.query(documentaryQuery);
-//     documentaryResult.rows.forEach((video) => {
-//       vids.push({
-//         ...video,
-//         img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
-//         genres: { ...defaultGenres, documentary: true }
-//       });
-//     });
-//     return vids;
-//   } catch (err) {
-//     console.error(err);
-//   }
-// }
 
 export const filterGenre = async (genres: Genres): Promise<any> => {
   try {
@@ -284,7 +152,7 @@ export const filterGenre = async (genres: Genres): Promise<any> => {
       comedyResult.rows.forEach((video) => {
         vids.push({
           ...video,
-          img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+          img: `https://www.notflix.tech/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
           genres: genres
         });
       });
@@ -299,7 +167,7 @@ export const filterGenre = async (genres: Genres): Promise<any> => {
       actionResult.rows.forEach((video) => {
         vids.push({
           ...video,
-          img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+          img: `https://www.notflix.tech/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
           genres: genres
         });
       });
@@ -314,7 +182,7 @@ export const filterGenre = async (genres: Genres): Promise<any> => {
       dramaResult.rows.forEach((video) => {
         vids.push({
           ...video,
-          img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+          img: `https://www.notflix.tech/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
           genres: genres
         });
       });
@@ -329,7 +197,7 @@ export const filterGenre = async (genres: Genres): Promise<any> => {
       fantasyResult.rows.forEach((video) => {
         vids.push({
           ...video,
-          img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+          img: `https://www.notflix.tech/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
           genres: genres
         });
       });
@@ -344,7 +212,7 @@ export const filterGenre = async (genres: Genres): Promise<any> => {
       horrorResult.rows.forEach((video) => {
         vids.push({
           ...video,
-          img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+          img: `https://www.notflix.tech/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
           genres: genres
         });
       });
@@ -359,7 +227,7 @@ export const filterGenre = async (genres: Genres): Promise<any> => {
       documentaryResult.rows.forEach((video) => {
         vids.push({
           ...video,
-          img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
+          img: `https://www.notflix.tech/webhdfs/v1/home/videos/${video.vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0`,
           genres: genres
         });
       });
@@ -702,7 +570,7 @@ export const metadata = async (vid: string) => {
       values: [vid]
     }
     const genreResult = await client.query(genreQuery);
-    const result: MetaData = { ...videoResult.rows[0], genres: { ...genreResult.rows[0] }, img: `http://13.77.174.221:9864/webhdfs/v1/home/videos/${vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0` }
+    const result: MetaData = { ...videoResult.rows[0], genres: { ...genreResult.rows[0] }, img: `https://www.notflix.tech/webhdfs/v1/home/videos/${vid}/thumbnail.jpg?op=OPEN&user.name=main&namenoderpcaddress=notflix:8020&offset=0` }
     return result;
   } catch (err) {
     console.log(err);

@@ -189,16 +189,6 @@ router.get('/view', (req, res, next) => {
     streamFromHDFS(path, req, res, next);
 });
 
-// router.get('/get-previous-view-time', async (req, res, next) => {
-//     if (!req.query.vid) {
-//         res.status(400).send('Undefined vid');
-//         next();
-//         return;
-//     }
-
-//     res.status(200).json({ result: 0.0 })
-// });
-
 router.post('/count-view', async (req, res, next) => {
     const { vid } = req.body; // Get video id from params
     if (!vid) {
